@@ -2,7 +2,7 @@
 OS 			= $(shell uname -s)
 
 #:::::::::::::::VARS:::::::::::::::#
-SRC_DIR		= src/
+SRC_DIR		= srcs/
 OBJ_DIR 	= .obj/
 FSANITIZE 	= #-g -fsanitize=address
 CPPFLAGS 	= -Wall -Werror -Wextra -std=c++98 $(HEADER) $(FSANITIZE)
