@@ -11,8 +11,8 @@ CC 			= c++
 #:::::::::::::::MANDATORY:::::::::::::::#
 NAME 		= ircserv
 HEADER 		= -I includes
-MAIN 		= main 
-M_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
+MAIN 		= main  
+M_OBJS 		=$(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 
 #::::::::::::::::MLX:::::::::::::::#
 ifeq ($(OS), Darwin)
@@ -26,19 +26,19 @@ endif
 all: $(NAME)
 
 #::::::::::::::::SERV:::::::::::::::#
-S_FILES 	=
+S_FILES 	= 
 
 S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(R_FILES))))
 
 #:::::::::::::::CLNT::::::::::::::::#
 C_FILES 	=
 
-C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(A_FILES))))
+C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(C_FILES))))
 
 #::::::::::::::::CHNL:::::::::::::::#
 CH_FILES_M 	=
 
-CH_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)channel/, $(D_FILES_M))))
+CH_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)channel/, $(CH_FILES_M))))
 
 #:::::::::::::Compile::::::::::::::#
 $(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
@@ -47,8 +47,8 @@ $(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
 	@$(CC) $(CPPFLAGS) $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS) -o $(NAME)
 	@echo $(f_green)":::✅ $(NAME) is ready ✅:::"$(reset)
 
-$(OBJ_DIR)%.o: %.c 
-	@mkdir -p $(OBJ_DIR)src/server $(OBJ_DIR)src/client $(OBJ_DIR)src/channel
+$(OBJ_DIR)%.o: %.cpp 
+	@mkdir -p $(OBJ_DIR)$(SRC_DIR)server $(OBJ_DIR)$(SRC_DIR)client $(OBJ_DIR)$(SRC_DIR)channel
 	@$(CC) $(CPPFLAGS) -c $< -o $@
 
 #:::::::::::::Clean::::::::::::::#
