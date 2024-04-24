@@ -10,11 +10,11 @@ class Client {
 
 	public:
 		Client( void );
-		Client(const Client& src);
-		Client &operator=(const Client &);
-		~Client();
+		Client( const Client& );
+		Client& operator=( const Client& );
+		~Client( void );
 
-		//::::::::::setters and getters::::::::::
+		//::::::::Getters and Setters:::::::::::::::
 		void		setNickname( std::string );
 		void		setUsername( std::string );
 		void		setType( bool );

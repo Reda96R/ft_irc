@@ -25,30 +25,30 @@ endif
 
 all: $(NAME)
 
-#::::::::::::::::PRS:::::::::::::::#
-R_FILES 	=
+#::::::::::::::::SERV:::::::::::::::#
+S_FILES 	=
 
-R_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)reda/, $(R_FILES))))
+S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(R_FILES))))
 
-#::::::::::::::::RAY:::::::::::::::#
-A_FILES 	=
+#:::::::::::::::CLNT::::::::::::::::#
+C_FILES 	=
 
-A_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)abdellah/, $(A_FILES))))
+C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(A_FILES))))
 
-#::::::::::::::::TXT:::::::::::::::#
-D_FILES_M 	=
+#::::::::::::::::CHNL:::::::::::::::#
+CH_FILES_M 	=
 
-D_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)adam/, $(D_FILES_M))))
+CH_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)channel/, $(D_FILES_M))))
 
 #:::::::::::::Compile::::::::::::::#
-$(NAME): $(M_OBJS) $(R_OBJS) $(A_OBJS) $(D_OBJS)
+$(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
 	@echo $(cursive)$(grey)":::Making object files:::"$(reset)
 	@echo $(cursive)$(grey)":::Compiling $(NAME):::"$(reset)
-	@$(CC) $(CPPFLAGS) $(M_OBJS) $(R_OBJS) $(A_OBJS) $(D_OBJS) -o $(NAME)
+	@$(CC) $(CPPFLAGS) $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS) -o $(NAME)
 	@echo $(f_green)":::✅ $(NAME) is ready ✅:::"$(reset)
 
 $(OBJ_DIR)%.o: %.c 
-	@mkdir -p $(OBJ_DIR)src/reda $(OBJ_DIR)src/abdellah $(OBJ_DIR)src/adam
+	@mkdir -p $(OBJ_DIR)src/server $(OBJ_DIR)src/client $(OBJ_DIR)src/channel
 	@$(CC) $(CPPFLAGS) -c $< -o $@
 
 #:::::::::::::Clean::::::::::::::#
