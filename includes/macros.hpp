@@ -1,6 +1,12 @@
 #ifndef MACROS_HPP
 # define MACROS_HPP
 
+//::::::::::::::::::Client::::::::::::::::::::::::
+			/*~~~Client Status~~~*/
+# define OFFLINE		0
+# define ONLINE			1
+
+//::::::::::::::::::Colors:::::::::::::::::::::::::
 # define BLACK  		"\033[0;30m"
 # define RED    		"\033[0;31m"
 # define GREEN  		"\033[0;32m"
