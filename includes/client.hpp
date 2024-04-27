@@ -36,8 +36,8 @@ class Client {
 		int&				getPollFd( void );
 
 		//::::::::Methods:::::::::::::::
-		void	clientAdd( void );
-
+		void				clientAdd( void );
+		bool				clientRecv( char *recv);
 };
 
 #endif // !CLIENT_HPP

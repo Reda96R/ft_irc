@@ -2,6 +2,7 @@
 #include "../../includes/macros.hpp"
 #include <netinet/in.h>
 #include <string>
+#include <sstream>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Client::Client( void ){
@@ -73,12 +74,14 @@ void	Client::setAddress( struct sockaddr_in& adress ){
 void	Client::setPollFd( const int& fd ){
 	this->clientPollFd = fd;
 }
+
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 void	Client::clientAdd( void ){
 	Client		newClient;
 	socklen_t	addressLen = sizeof(newClient.getAddress());
+	int			serverSocket = 0; // this will be replaced with the actuall server socket
 
-	newClient.setSocket(accept(0, (struct sockaddr *) &newClient.getAddress(), &addressLen));
+	newClient.setSocket(accept(serverSocket, (struct sockaddr *) &newClient.getAddress(), &addressLen));
 	/*
 	TODO: check if the client is connected succesfully or not
 	 if (newClient.getSocket() < 0)
@@ -88,6 +91,20 @@ void	Client::clientAdd( void ){
 	*/
 	newClient.setPollFd(newClient.getSocket());
 	newClient.clientStatus = ONLINE;
+}
+
+bool	Client::clientRecv( char *recv){
+	bool				isInputValid;
+	std::string			tmp;
+	std::istringstream	iss(recv);
+
+	while (getline(iss, tmp)){
+		if (inputParser(tmp))
+			isInputValid = true;
+		else
+			isInputValid = false;
+	}
+	return (isInputValid);
 }
 
 //::::::::::::::::::Deconstructor:::::::::::::::::::::::::
