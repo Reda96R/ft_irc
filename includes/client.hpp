@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 # include <string>
+#include <iostream>
 # include <netinet/in.h>
 class Client {
 	private:
@@ -39,5 +40,9 @@ class Client {
 		void				clientAdd( void );
 		bool				clientRecv( char *recv);
 };
+
+
+
+bool	commandParser( std::string& input );
 
 #endif // !CLIENT_HPP
