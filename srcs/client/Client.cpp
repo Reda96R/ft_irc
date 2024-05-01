@@ -99,7 +99,7 @@ bool	Client::clientRecv( char *recv){
 	std::istringstream	iss(recv);
 
 	while (getline(iss, tmp)){
-		if (inputParser(tmp))
+		if (commandParser(tmp))
 			isInputValid = true;
 		else
 			isInputValid = false;
