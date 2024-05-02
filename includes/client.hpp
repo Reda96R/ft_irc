@@ -1,9 +1,10 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include <string>
-#include <iostream>
+# include <iostream>
+# include "Structs.hpp"
 # include <netinet/in.h>
+
 class Client {
 	private:
 		std::string			  clientNickname;
@@ -16,6 +17,7 @@ class Client {
 		struct sockaddr_in	  clientAddress;
 
 	public:
+		struct s_ircCommand	  clientCommand;
 		Client( void );
 		Client( const Client& );
 		Client& operator=( const Client& );
