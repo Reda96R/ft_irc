@@ -5,7 +5,7 @@
 # include <stack>
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
-typedef struct s_ircCommand{
+typedef struct s_ircCommand {
 
 	std::string				  prefix;
 	std::string				  command;

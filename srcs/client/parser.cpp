@@ -1,22 +1,22 @@
 #include "../../includes/Client.hpp"
 #include "../../includes/macros.hpp"
+#include "../../includes/Commands.hpp"
 #include <string>
-#include <map>
 
 //TODO:
-// !!! check for tabs also in find_first_not_of() !!!
-
-bool	commandParser( std::string& input ){
-	size_t		position = 0;
-	size_t		prefixEnd;
-	size_t		commandEnd;
-	size_t		argumentEnd;
-	bool		args = false;
-
-	Client		test;
+/* !!! check for tabs also in find_first_not_of() !!! */
 
 
-	//std::map<std::string, > map containing the command and pointer to its functionj
+bool	commandParser( std::string& input, struct s_ircCommand& clientInput ){
+	size_t			position = 0;
+
+	size_t			prefixEnd;
+	size_t			commandEnd;
+	size_t			argumentEnd;
+	bool			args = false;
+	
+	Commands		commands;
+	t_commandsMap	commandsMap = commands.getCommandMap();
 	
 	// if (tmp.eof()){
 	// 	std::cerr << "eof error" << std::endl;
@@ -29,53 +29,47 @@ bool	commandParser( std::string& input ){
 		prefixEnd = input.find(' ', position);
 		if (prefixEnd == std::string::npos)
 			return (false);
-		test.clientCommand.prefix = input.substr(position, prefixEnd - position);
+		clientInput.prefix = input.substr(position, prefixEnd - position);
 		position = input.find_first_not_of(' ', prefixEnd);
 	}
 
 	// Parsing the actuall command
 	commandEnd = input.find(' ', position);
 	if (commandEnd == std::string::npos)
-		test.clientCommand.command  = input.substr(position, commandEnd);
+		clientInput.command  = input.substr(position, commandEnd);
 	else{
 		args = true;
-		test.clientCommand.command = input.substr(position, commandEnd - position);
+		clientInput.command = input.substr(position, commandEnd - position);
 	}
 
-	/*
-	---> commandsMapIterator iterator for the command map <---
-	std::map<std::string, >::iterator 
-	
-	commandsMapIterator = commandsMap.find(command);
-
-	if (commandsMapIterator == commandsMap.end()){
-		---> the command does not exist <---
+	t_commandsMap::iterator it = commandsMap.find(clientInput.command);
+	if (it != commandsMap.end()){
+		std::cout << "Command exists" << std::endl;
+	}
+	else{
+		std::cout << "Command doesn't exists" << std::endl;
 		return (false);
 	}
-	
-	TODO:
-	---> save the command <---
-	*/
-
 	position = input.find_first_not_of(' ', commandEnd);
 
 	// Parsing the command's arguments if found
 	if (args){
 		argumentEnd = input.find(' ', position);
 		if (argumentEnd == std::string::npos)
-			test.clientCommand.arguments.push(input.substr(position, argumentEnd));
+			clientInput.arguments.push(input.substr(position, argumentEnd));
 		else{
 			while (argumentEnd != std::string::npos){
-				test.clientCommand.arguments.push(input.substr(position, argumentEnd - position));
+				clientInput.arguments.push(input.substr(position, argumentEnd - position));
 				position = input.find_first_not_of(' ', argumentEnd);
 				if (position == std::string::npos)
 					break ;
 				argumentEnd = input.find(' ', position);
 			}
 			if (argumentEnd == std::string::npos)
-				test.clientCommand.arguments.push(input.substr(position, argumentEnd));
+				clientInput.arguments.push(input.substr(position, argumentEnd));
 		}
 	}
+	// check if there's more left
 
 	// Command execution
 	/*
@@ -83,15 +77,5 @@ bool	commandParser( std::string& input ){
 		return (true);
 	*/
 
-	
-	// /*				~~~ TESTING ~~~
-	
-	// std::cout << "prefix---> " << test.clientCommand.prefix << std::endl;
-	// std::cout << "command---> " << test.clientCommand.command << std::endl;
-	// std::cout << "arg1---> " << test.clientCommand.arguments.top()<< std::endl;
-	// test.clientCommand.arguments.pop();
-	// std::cout << "arg2---> " << test.clientCommand.arguments.top()<< std::endl;
-
-	// */
 	return (true);
 }

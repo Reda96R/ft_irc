@@ -31,7 +31,7 @@ S_FILES 	=
 S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(R_FILES))))
 
 #:::::::::::::::CLNT::::::::::::::::#
-C_FILES 	= parser Client
+C_FILES 	= parser Client Commands
 
 C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(C_FILES))))
 
@@ -45,7 +45,7 @@ $(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
 	@echo $(cursive)$(grey)":::Making object files:::"$(reset)
 	@echo $(cursive)$(grey)":::Compiling $(NAME):::"$(reset)
 	@$(CC) $(CPPFLAGS) $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS) -o $(NAME)
-	@echo $(f_green)":::✅ $(NAME) is ready ✅:::"$(reset)
+	@echo $(green)":::✅ $(NAME) is ready ✅:::"$(reset)
 
 $(OBJ_DIR)%.o: %.cpp 
 	@mkdir -p $(OBJ_DIR)$(SRC_DIR)server $(OBJ_DIR)$(SRC_DIR)client $(OBJ_DIR)$(SRC_DIR)channel

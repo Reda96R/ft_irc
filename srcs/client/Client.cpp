@@ -39,6 +39,10 @@ std::string&	  Client::getNickname( void ){
 	return (this->clientNickname);
 }
 
+struct s_ircCommand& Client::getInput( void ){
+	return (this->clientInput);
+}
+
 int&  Client::getSocket( void ){
 	return (this->clientSocket);
 }
@@ -94,16 +98,16 @@ void	Client::clientAdd( void ){
 }
 
 bool	Client::clientRecv( char *recv){
-	bool				isInputValid;
+	bool				isInputValid = false;
 	std::string			tmp;
 	std::istringstream	iss(recv);
 
-	while (getline(iss, tmp)){
-		if (commandParser(tmp))
-			isInputValid = true;
-		else
-			isInputValid = false;
-	}
+	// while (getline(iss, tmp)){
+	// 	if (commandParser(tmp))
+	// 		isInputValid = true;
+	// 	else
+	// 		isInputValid = false;
+	// }
 	return (isInputValid);
 }
 

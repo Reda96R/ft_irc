@@ -7,36 +7,37 @@
 
 class Client {
 	private:
-		std::string			  clientNickname;
-		std::string			  clientUsername;
-		bool				  clientIsOperator; // true if the client is an operator and not a regular user
+		std::string				clientNickname;
+		std::string				clientUsername;
+		bool					clientIsOperator; // true if the client is an operator and not a regular user
+		struct s_ircCommand		clientInput;
 
-		int					  clientSocket;
-		int					  clientPollFd;
-		int					  clientStatus;
-		struct sockaddr_in	  clientAddress;
+		int						clientSocket;
+		int						clientPollFd;
+		int						clientStatus;
+		struct sockaddr_in		clientAddress;
 
 	public:
-		struct s_ircCommand	  clientCommand;
 		Client( void );
 		Client( const Client& );
 		Client& operator=( const Client& );
 		~Client( void );
 
 		//::::::::Getters and Setters:::::::::::::::
-		void				setNickname( std::string& );
-		void				setUsername( std::string& );
-		void				setType( bool );
-		bool				getType( void );
-		std::string&		getUsername( void );
-		std::string&		getNickname( void );
+		void					setNickname( std::string& );
+		void					setUsername( std::string& );
+		void					setType( bool );
+		bool					getType( void );
+		std::string&			getUsername( void );
+		std::string&			getNickname( void );
 
-		void				setSocket( const int& );
-		void				setAddress( struct sockaddr_in&  );
-		void				setPollFd( const int& );
-		int&				getSocket( void );
-		struct sockaddr_in& getAddress( void );
-		int&				getPollFd( void );
+		void					setSocket( const int& );
+		void					setAddress( struct sockaddr_in&  );
+		void					setPollFd( const int& );
+		int&					getSocket( void );
+		struct sockaddr_in&		getAddress( void );
+		int&					getPollFd( void );
+		struct s_ircCommand&	getInput( void );
 
 		//::::::::Methods:::::::::::::::
 		void				clientAdd( void );
@@ -45,6 +46,6 @@ class Client {
 
 
 
-bool	commandParser( std::string& input );
+bool	commandParser( std::string& , s_ircCommand& );
 
 #endif // !CLIENT_HPP
