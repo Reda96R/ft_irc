@@ -6,8 +6,7 @@
 //TODO:
 /* !!! check for tabs also in find_first_not_of() !!! */
 
-
-bool	commandParser( std::string& input, struct s_ircCommand& clientInput ){
+bool	commandParser( std::string& input, struct s_ircCommand& clientInput, Client& client ){
 	size_t			position = 0;
 
 	size_t			prefixEnd;
@@ -72,6 +71,8 @@ bool	commandParser( std::string& input, struct s_ircCommand& clientInput ){
 	// check if there's more left
 
 	// Command execution
+	void (Commands::*cmd)(Client&) = it->second;
+	(commands.*cmd)(client);
 	/*
 	if (execute)
 		return (true);

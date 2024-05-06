@@ -31,7 +31,7 @@ S_FILES 	=
 S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(R_FILES))))
 
 #:::::::::::::::CLNT::::::::::::::::#
-C_FILES 	= parser Client Commands
+C_FILES 	= Parser Client Commands
 
 C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(C_FILES))))
 

@@ -27,6 +27,11 @@ Client& Client::operator=( const Client& rhs ){
 }
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
+
+int		Client::getStatus( void ){
+	return (this->clientStatus);
+}
+
 bool	Client::getType( void ){
 	return (this->clientIsOperator);
 }
@@ -65,6 +70,10 @@ void	Client::setUsername( std::string& username ){
 
 void	Client::setType( bool type ){
 	this->clientIsOperator = type;
+}
+
+void	Client::setStatus( int status ){
+	this->clientStatus = status;
 }
 
 void	Client::setSocket( const int& socket ){

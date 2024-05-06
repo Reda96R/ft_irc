@@ -10,11 +10,11 @@ class Client {
 		std::string				clientNickname;
 		std::string				clientUsername;
 		bool					clientIsOperator; // true if the client is an operator and not a regular user
+		int						clientStatus;
 		struct s_ircCommand		clientInput;
 
 		int						clientSocket;
 		int						clientPollFd;
-		int						clientStatus;
 		struct sockaddr_in		clientAddress;
 
 	public:
@@ -27,6 +27,8 @@ class Client {
 		void					setNickname( std::string& );
 		void					setUsername( std::string& );
 		void					setType( bool );
+		void					setStatus( int );
+		int						getStatus( void );
 		bool					getType( void );
 		std::string&			getUsername( void );
 		std::string&			getNickname( void );
@@ -46,6 +48,6 @@ class Client {
 
 
 
-bool	commandParser( std::string& , s_ircCommand& );
+bool	commandParser( std::string& , s_ircCommand&, Client& );
 
 #endif // !CLIENT_HPP

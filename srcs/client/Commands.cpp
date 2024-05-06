@@ -1,4 +1,5 @@
 #include "../../includes/Commands.hpp"
+#include "../../includes/macros.hpp"
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -25,22 +26,45 @@ std::map<std::string, void (Commands::*) ( Client& )>& Commands::getCommandMap( 
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 void	Commands::passCommand( Client& client ){
-	(void) client;
+	std::string pass = "pass"; // this will be replaced with server password
+
+	if (client.getStatus() == AUTHENTICATED)
+		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
+	else if (client.getInput().arguments.empty())
+		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
+	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.top() == pass)
+	{
+		client.setStatus(AUTHENTICATED);
+		std::cout << GREEN << client.getNickname() << " password accepted" << RESET << std::endl;
+	}
+	else
+		std::cerr << RED << client.getNickname() << " password not accepted" << RESET << std::endl;
 }
 
 void	Commands::nickCommand( Client& client ){
+	//TODO:
+	// - check if AUTHENTICATED
+	// - check if already registered
+	// - check if command's parameters exist
+	// - check if the provided nickname already exsits
+	// - set the nick name
+
+	std::cout << "entering the nick command" << std::endl;
 	(void) client;
 }
 
 void	Commands::userCommand( Client& client ){
+	std::cout << "entering the user command" << std::endl;
 	(void) client;
 }
 
 void	Commands::joinCommand( Client& client ){
+	std::cout << "entering the join command" << std::endl;
 	(void) client;
 }
 
 void	Commands::privmsgCommand( Client& client ){
+	std::cout << "entering the privmsg command" << std::endl;
 	(void) client;
 }
 
