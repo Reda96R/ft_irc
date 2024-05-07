@@ -1,12 +1,11 @@
 #include "../../includes/Client.hpp"
 #include "../../includes/macros.hpp"
 #include "../../includes/Commands.hpp"
-#include <string>
 
-//TODO:
+//TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
 
-bool	commandParser( std::string& input, struct s_ircCommand& clientInput, Client& client ){
+bool	commandParser( std::string& input, Client& client, struct s_ircCommand& clientInput ){
 	size_t			position = 0;
 
 	size_t			prefixEnd;
@@ -55,28 +54,30 @@ bool	commandParser( std::string& input, struct s_ircCommand& clientInput, Client
 	if (args){
 		argumentEnd = input.find(' ', position);
 		if (argumentEnd == std::string::npos)
-			clientInput.arguments.push(input.substr(position, argumentEnd));
+			clientInput.arguments.push_back(input.substr(position, argumentEnd));
 		else{
 			while (argumentEnd != std::string::npos){
-				clientInput.arguments.push(input.substr(position, argumentEnd - position));
+				clientInput.arguments.push_back(input.substr(position, argumentEnd - position));
 				position = input.find_first_not_of(' ', argumentEnd);
 				if (position == std::string::npos)
 					break ;
 				argumentEnd = input.find(' ', position);
 			}
 			if (argumentEnd == std::string::npos)
-				clientInput.arguments.push(input.substr(position, argumentEnd));
+				clientInput.arguments.push_back(input.substr(position, argumentEnd));
 		}
 	}
+
+	//TODO:
 	// check if there's more left
 
 	// Command execution
 	void (Commands::*cmd)(Client&) = it->second;
 	(commands.*cmd)(client);
-	/*
-	if (execute)
-		return (true);
-	*/
+
+	client.getInput().prefix.clear();
+	client.getInput().command.clear();
+	client.getInput().arguments.clear();
 
 	return (true);
 }

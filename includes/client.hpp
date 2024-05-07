@@ -10,7 +10,7 @@ class Client {
 		std::string				clientNickname;
 		std::string				clientUsername;
 		bool					clientIsOperator; // true if the client is an operator and not a regular user
-		int						clientStatus;
+		struct s_status			clientStatus;
 		struct s_ircCommand		clientInput;
 
 		int						clientSocket;
@@ -24,11 +24,14 @@ class Client {
 		~Client( void );
 
 		//::::::::Getters and Setters:::::::::::::::
+		//TODO:
+		// adding const to the getters and not returning the refrences
+
 		void					setNickname( std::string& );
 		void					setUsername( std::string& );
 		void					setType( bool );
-		void					setStatus( int );
-		int						getStatus( void );
+		void					setStatus( bool&, bool ); // ---> need to modify this <---
+		struct s_status&		getStatus( void );
 		bool					getType( void );
 		std::string&			getUsername( void );
 		std::string&			getNickname( void );
@@ -48,6 +51,6 @@ class Client {
 
 
 
-bool	commandParser( std::string& , s_ircCommand&, Client& );
+bool	commandParser( std::string&, Client&, s_ircCommand& );
 
 #endif // !CLIENT_HPP

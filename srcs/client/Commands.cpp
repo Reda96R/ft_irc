@@ -1,5 +1,6 @@
 #include "../../includes/Commands.hpp"
 #include "../../includes/macros.hpp"
+#include <sys/signal.h>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -28,13 +29,14 @@ std::map<std::string, void (Commands::*) ( Client& )>& Commands::getCommandMap( 
 void	Commands::passCommand( Client& client ){
 	std::string pass = "pass"; // this will be replaced with server password
 
-	if (client.getStatus() == AUTHENTICATED)
+	if (client.getStatus().authenticated)
 		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
 	else if (client.getInput().arguments.empty())
 		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
-	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.top() == pass)
+	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments[0] == pass)
 	{
-		client.setStatus(AUTHENTICATED);
+		client.getStatus().authenticated = true;
+		client.getStatus().pass = true;
 		std::cout << GREEN << client.getNickname() << " password accepted" << RESET << std::endl;
 	}
 	else
@@ -48,9 +50,26 @@ void	Commands::nickCommand( Client& client ){
 	// - check if command's parameters exist
 	// - check if the provided nickname already exsits
 	// - set the nick name
-
-	std::cout << "entering the nick command" << std::endl;
-	(void) client;
+	if (!client.getStatus().authenticated){
+		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
+		return ;
+	}
+	else if (client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
+		return ;
+	}
+	else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
+		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
+		return ;
+	}
+	else if (client.getInput().arguments.size() < 2)
+	{
+		client.setNickname(client.getInput().arguments[0]);
+		client.getStatus().nick = true;
+		if (client.getStatus().user)
+			client.getStatus().registered = true;
+		std::cout << GREEN << client.getNickname() << " nickname accepted" << RESET << std::endl;
+	}
 }
 
 void	Commands::userCommand( Client& client ){

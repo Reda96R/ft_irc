@@ -2,15 +2,23 @@
 # define STRUCTS_HPP
 
 # include <string>
-# include <stack>
+# include <vector>
+
+//::::::::::::::::::Client:::::::::::::::::::::::::::
+struct s_status { // struct showcasing the provided info and state of the client, true means that the user provided that info or that step is done
+	bool	pass;
+	bool	nick;
+	bool	user;
+	bool	authenticated;
+	bool	registered;
+};
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
-typedef struct s_ircCommand {
-
+struct s_ircCommand {
 	std::string				  prefix;
 	std::string				  command;
-	std::stack<std::string>	  arguments;
+	std::vector<std::string>	  arguments;
+};
 
-} t_ircComand;
 
 #endif

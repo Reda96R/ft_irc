@@ -9,7 +9,11 @@ Client::Client( void ){
 	this->clientNickname = "-";
 	this->clientUsername = "-";
 	this->clientIsOperator = "0";
-	this->clientStatus = OFFLINE;
+	this->clientStatus.pass = false;
+	this->clientStatus.nick = false;
+	this->clientStatus.user = false;
+	this->clientStatus.registered = false;
+	this->clientStatus.authenticated = false;
 }
 
 Client::Client( const Client& src){
@@ -28,7 +32,7 @@ Client& Client::operator=( const Client& rhs ){
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
 
-int		Client::getStatus( void ){
+struct s_status& Client::getStatus( void ){
 	return (this->clientStatus);
 }
 
@@ -72,8 +76,9 @@ void	Client::setType( bool type ){
 	this->clientIsOperator = type;
 }
 
-void	Client::setStatus( int status ){
-	this->clientStatus = status;
+// set what ?
+void	Client::setStatus( bool& target, bool value ){
+	target = value;
 }
 
 void	Client::setSocket( const int& socket ){
@@ -103,7 +108,6 @@ void	Client::clientAdd( void ){
 		 std::cout << GREEN << "New client connected" << std::endl;
 	*/
 	newClient.setPollFd(newClient.getSocket());
-	newClient.clientStatus = ONLINE;
 }
 
 bool	Client::clientRecv( char *recv){
