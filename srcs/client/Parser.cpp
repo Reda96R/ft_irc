@@ -1,17 +1,19 @@
 #include "../../includes/Client.hpp"
 #include "../../includes/macros.hpp"
 #include "../../includes/Commands.hpp"
+#include <string>
 
 //TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
 
-bool	commandParser( std::string& input, Client& client, struct s_ircCommand& clientInput ){
+bool	commandParser( std::string& input, Client& client ){
 	size_t			position = 0;
 
 	size_t			prefixEnd;
 	size_t			commandEnd;
 	size_t			argumentEnd;
 	bool			args = false;
+	std::string		tmp;
 	
 	Commands		commands;
 	t_commandsMap	commandsMap = commands.getCommandMap();
@@ -27,20 +29,24 @@ bool	commandParser( std::string& input, Client& client, struct s_ircCommand& cli
 		prefixEnd = input.find(' ', position);
 		if (prefixEnd == std::string::npos)
 			return (false);
-		clientInput.prefix = input.substr(position, prefixEnd - position);
+		tmp = input.substr(position, prefixEnd - position);
+		client.setInput("prefix", tmp);
 		position = input.find_first_not_of(' ', prefixEnd);
 	}
 
 	// Parsing the actuall command
 	commandEnd = input.find(' ', position);
-	if (commandEnd == std::string::npos)
-		clientInput.command  = input.substr(position, commandEnd);
+	if (commandEnd == std::string::npos){
+		tmp = input.substr(position, commandEnd);
+		client.setInput("command", tmp);
+	}
 	else{
 		args = true;
-		clientInput.command = input.substr(position, commandEnd - position);
+		tmp = input.substr(position, commandEnd - position);
+		client.setInput("command", tmp);
 	}
 
-	t_commandsMap::iterator it = commandsMap.find(clientInput.command);
+	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
 	if (it != commandsMap.end()){
 		std::cout << "Command exists" << std::endl;
 	}
@@ -53,18 +59,23 @@ bool	commandParser( std::string& input, Client& client, struct s_ircCommand& cli
 	// Parsing the command's arguments if found
 	if (args){
 		argumentEnd = input.find(' ', position);
-		if (argumentEnd == std::string::npos)
-			clientInput.arguments.push_back(input.substr(position, argumentEnd));
+		if (argumentEnd == std::string::npos){
+			tmp = input.substr(position, argumentEnd);
+			client.setInput("arguments", tmp);
+		}
 		else{
 			while (argumentEnd != std::string::npos){
-				clientInput.arguments.push_back(input.substr(position, argumentEnd - position));
+				tmp = input.substr(position, argumentEnd - position);
+				client.setInput("arguments", tmp);
 				position = input.find_first_not_of(' ', argumentEnd);
 				if (position == std::string::npos)
 					break ;
 				argumentEnd = input.find(' ', position);
 			}
-			if (argumentEnd == std::string::npos)
-				clientInput.arguments.push_back(input.substr(position, argumentEnd));
+			if (argumentEnd == std::string::npos){
+				tmp = input.substr(position, argumentEnd);
+				client.setInput("arguments", tmp);
+			}
 		}
 	}
 
@@ -74,10 +85,7 @@ bool	commandParser( std::string& input, Client& client, struct s_ircCommand& cli
 	// Command execution
 	void (Commands::*cmd)(Client&) = it->second;
 	(commands.*cmd)(client);
-
-	client.getInput().prefix.clear();
-	client.getInput().command.clear();
-	client.getInput().arguments.clear();
+	client.clearInput();
 
 	return (true);
 }

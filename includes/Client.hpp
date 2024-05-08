@@ -24,33 +24,35 @@ class Client {
 		~Client( void );
 
 		//::::::::Getters and Setters:::::::::::::::
-		//TODO:
-		// adding const to the getters and not returning the refrences
-
 		void					setNickname( std::string& );
 		void					setUsername( std::string& );
 		void					setType( bool );
-		void					setStatus( bool&, bool ); // ---> need to modify this <---
-		struct s_status&		getStatus( void );
-		bool					getType( void );
-		std::string&			getUsername( void );
-		std::string&			getNickname( void );
+		void					setStatus( std::string, bool );
+
+		struct s_status			getStatus( void ) const;
+		bool					getType( void ) const;
+		std::string				getUsername( void ) const;
+		std::string				getNickname( void ) const;
 
 		void					setSocket( const int& );
 		void					setAddress( struct sockaddr_in&  );
 		void					setPollFd( const int& );
-		int&					getSocket( void );
-		struct sockaddr_in&		getAddress( void );
-		int&					getPollFd( void );
-		struct s_ircCommand&	getInput( void );
+		void					setInput( std::string, std::string& );
+
+		int						getSocket( void ) const;
+		struct sockaddr_in		getAddress( void ) const;
+		int						getPollFd( void ) const;
+		struct s_ircCommand		getInput( void ) const;
 
 		//::::::::Methods:::::::::::::::
 		void				clientAdd( void );
 		bool				clientRecv( char *recv);
+
+		void				clearInput( void );
 };
 
 
 
-bool	commandParser( std::string&, Client&, s_ircCommand& );
+bool	commandParser( std::string&, Client& );
 
 #endif // !CLIENT_HPP

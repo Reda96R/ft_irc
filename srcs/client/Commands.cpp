@@ -35,8 +35,8 @@ void	Commands::passCommand( Client& client ){
 		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
 	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments[0] == pass)
 	{
-		client.getStatus().authenticated = true;
-		client.getStatus().pass = true;
+		client.setStatus("authenticated", true);
+		client.setStatus("pass", true);
 		std::cout << GREEN << client.getNickname() << " password accepted" << RESET << std::endl;
 	}
 	else
@@ -45,11 +45,12 @@ void	Commands::passCommand( Client& client ){
 
 void	Commands::nickCommand( Client& client ){
 	//TODO:
-	// - check if AUTHENTICATED
-	// - check if already registered
-	// - check if command's parameters exist
-	// - check if the provided nickname already exsits
-	// - set the nick name
+	// √ check if AUTHENTICATED
+	// √ check if already registered
+	// √ check if command's parameters exist
+	// ---> check if the provided nickname already exsits <---
+	// √ set the nick name
+
 	if (!client.getStatus().authenticated){
 		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
 		return ;
@@ -65,9 +66,9 @@ void	Commands::nickCommand( Client& client ){
 	else if (client.getInput().arguments.size() < 2)
 	{
 		client.setNickname(client.getInput().arguments[0]);
-		client.getStatus().nick = true;
+		client.setStatus("nick", true);
 		if (client.getStatus().user)
-			client.getStatus().registered = true;
+			client.setStatus("registered", true);
 		std::cout << GREEN << client.getNickname() << " nickname accepted" << RESET << std::endl;
 	}
 }
@@ -88,7 +89,7 @@ void	Commands::privmsgCommand( Client& client ){
 }
 
 
-Commands::Commands( const Commands& src){
+Commands::Commands( const Commands& src ){
 	*this = src;
 }
 

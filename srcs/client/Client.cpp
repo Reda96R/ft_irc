@@ -31,36 +31,35 @@ Client& Client::operator=( const Client& rhs ){
 }
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
-
-struct s_status& Client::getStatus( void ){
+struct s_status Client::getStatus( void ) const{
 	return (this->clientStatus);
 }
 
-bool	Client::getType( void ){
+bool	Client::getType( void ) const{
 	return (this->clientIsOperator);
 }
 
-std::string&	  Client::getUsername( void ){
+std::string	  Client::getUsername( void ) const{
 	return (this->clientUsername);
 }
 
-std::string&	  Client::getNickname( void ){
+std::string	  Client::getNickname( void ) const{
 	return (this->clientNickname);
 }
 
-struct s_ircCommand& Client::getInput( void ){
+struct s_ircCommand Client::getInput( void ) const{
 	return (this->clientInput);
 }
 
-int&  Client::getSocket( void ){
+int  Client::getSocket( void ) const{
 	return (this->clientSocket);
 }
 
-struct sockaddr_in& Client::getAddress( void ){
+struct sockaddr_in Client::getAddress( void ) const{
 	return (this->clientAddress);
 }
 
-int&  Client::getPollFd( void ){
+int  Client::getPollFd( void ) const{
 	return (this->clientPollFd);
 }
 
@@ -76,9 +75,17 @@ void	Client::setType( bool type ){
 	this->clientIsOperator = type;
 }
 
-// set what ?
-void	Client::setStatus( bool& target, bool value ){
-	target = value;
+void	Client::setStatus( std::string target, bool value ){
+	if (target == "pass")
+		this->clientStatus.pass = value;
+	else if (target == "nick")
+		this->clientStatus.nick = value;
+	else if (target == "user")
+		this->clientStatus.user = value;
+	else if (target == "authenticated")
+		this->clientStatus.authenticated = value;
+	else if (target == "registered")
+		this->clientStatus.registered = value;
 }
 
 void	Client::setSocket( const int& socket ){
@@ -93,13 +100,22 @@ void	Client::setPollFd( const int& fd ){
 	this->clientPollFd = fd;
 }
 
+void	Client::setInput( std::string target, std::string& value ){
+	if (target == "prefix")
+		this->clientInput.prefix = value;
+	else if (target == "command")
+		this->clientInput.command = value;
+	else if (target == "arguments")
+		this->clientInput.arguments.push_back(value);
+}
+
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 void	Client::clientAdd( void ){
 	Client		newClient;
-	socklen_t	addressLen = sizeof(newClient.getAddress());
-	int			serverSocket = 0; // this will be replaced with the actuall server socket
+	// socklen_t	addressLen = sizeof(newClient.getAddress());
+	// int			serverSocket = 0; // this will be replaced with the actuall server socket
 
-	newClient.setSocket(accept(serverSocket, (struct sockaddr *) &newClient.getAddress(), &addressLen));
+	// newClient.setSocket(accept(serverSocket, (struct sockaddr *) &newClient.getAddress(), &addressLen));
 	/*
 	TODO: check if the client is connected succesfully or not
 	 if (newClient.getSocket() < 0)
@@ -122,6 +138,12 @@ bool	Client::clientRecv( char *recv){
 	// 		isInputValid = false;
 	// }
 	return (isInputValid);
+}
+
+void	Client::clearInput( void ){
+	this->clientInput.prefix.clear();
+	this->clientInput.command.clear();
+	this->clientInput.arguments.clear();
 }
 
 //::::::::::::::::::Deconstructor:::::::::::::::::::::::::

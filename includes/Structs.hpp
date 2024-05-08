@@ -15,8 +15,8 @@ struct s_status { // struct showcasing the provided info and state of the client
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
 struct s_ircCommand {
-	std::string				  prefix;
-	std::string				  command;
+	std::string					  prefix;
+	std::string					  command;
 	std::vector<std::string>	  arguments;
 };
 
