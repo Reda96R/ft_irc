@@ -6,12 +6,17 @@ int	  main ( void ){
 
 	std::string input = ":pref PASS  pass";
 	commandParser(input, client);
-	input = "NICK reda";
+	input = "NICK testnickname";
 	commandParser(input, client);
 	std::cout << YELLOW << "nickname :::> " << client.getNickname() << RESET << std::endl;
-	input = "NICK test";
+
+	std::cout << std::endl;
+	std::cout << CYAN << "::::::::::::::::::::::::::::::::::::::::::::::" << RESET << std::endl;
+	std::cout << std::endl;
+
+	input = "USER testuser";
 	commandParser(input, client);
-	std::cout << YELLOW << "nickname :::> " << client.getNickname() << RESET << std::endl;
+	std::cout << YELLOW << "username :::> " << client.getUsername() << RESET << std::endl;
 
 	// std::cout << "prefix---> " << client.getInput().prefix << std::endl;
 	// std::cout << "command---> " << client.getInput().command << std::endl;

@@ -17,7 +17,7 @@ class Commands {
 		~Commands( void );
 
 		//::::::::Getters and Setters::::::
-		std::map<std::string, void (Commands::*) ( Client& )>& getCommandMap( void );
+		std::map<std::string, void (Commands::*) ( Client& )> getCommandMap( void ) const;
 		
 		
 		//::::::::::::Commands:::::::::::::
