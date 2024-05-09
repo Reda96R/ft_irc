@@ -38,7 +38,7 @@ C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/
 #::::::::::::::::CHNL:::::::::::::::#
 CH_FILES_M 	= Channel
 
-CH_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)channel/, $(CH_FILES_M))))
+CH_OBJS 	= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)channels/, $(CH_FILES_M))))
 
 #:::::::::::::Compile::::::::::::::#
 $(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
