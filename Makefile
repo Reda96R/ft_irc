@@ -48,7 +48,7 @@ $(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
 	@echo $(green)":::✅ $(NAME) is ready ✅:::"$(reset)
 
 $(OBJ_DIR)%.o: %.cpp 
-	@mkdir -p $(OBJ_DIR)$(SRC_DIR)server $(OBJ_DIR)$(SRC_DIR)client $(OBJ_DIR)$(SRC_DIR)channel
+	@mkdir -p $(OBJ_DIR)$(SRC_DIR)server $(OBJ_DIR)$(SRC_DIR)client $(OBJ_DIR)$(SRC_DIR)channels
 	@$(CC) $(CPPFLAGS) -c $< -o $@
 
 #:::::::::::::Clean::::::::::::::#
