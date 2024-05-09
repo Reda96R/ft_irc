@@ -6,6 +6,7 @@
 //TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
 
+// Try using a class Singlton
 bool	commandParser( std::string& input, Client& client ){
 	size_t			position = 0;
 
@@ -32,6 +33,8 @@ bool	commandParser( std::string& input, Client& client ){
 		tmp = input.substr(position, prefixEnd - position);
 		client.setInput("prefix", tmp);
 		position = input.find_first_not_of(' ', prefixEnd);
+		if (position == std::string::npos)
+			return (false);
 	}
 
 	// Parsing the actuall command
@@ -48,13 +51,15 @@ bool	commandParser( std::string& input, Client& client ){
 
 	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
 	if (it != commandsMap.end()){
-		std::cout << "Command exists" << std::endl;
+		std::cout << GREY << " ̴ ̴ ̴ Command exists  ̴ ̴ ̴" << RESET << std::endl;
 	}
 	else{
-		std::cout << "Command doesn't exists" << std::endl;
+		std::cout << GREY << " ̴ ̴ ̴ Command doesn't exists  ̴ ̴ ̴" << RESET << std::endl;
 		return (false);
 	}
 	position = input.find_first_not_of(' ', commandEnd);
+	if (position == std::string::npos)
+		args = false;
 
 	// Parsing the command's arguments if found
 	if (args){
