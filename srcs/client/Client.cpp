@@ -149,3 +149,10 @@ void	Client::clearInput( void ){
 //::::::::::::::::::Deconstructor:::::::::::::::::::::::::
 Client::~Client( void ){
 }
+
+//::::::::::::::::::Comparison operator:::::::::::::::::::::::::
+bool	Client::operator==( const Client& rhs ) const{
+	if (this->clientNickname == rhs.clientNickname)
+		return (true);
+	return (false);
+}

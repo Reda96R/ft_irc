@@ -23,6 +23,9 @@ class Client {
 		Client& operator=( const Client& );
 		~Client( void );
 
+		//Comparison operator
+		bool operator==( const Client& ) const;
+
 		//::::::::Getters and Setters:::::::::::::::
 		void					setNickname( std::string& );
 		void					setUsername( std::string& );

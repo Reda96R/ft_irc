@@ -23,12 +23,12 @@ class Channel {
         // MODES
         bool channelPasswordProtected;
         bool channelInviteOnly;
-        bool userLimit;
+        bool userLimitOnOff;
 
         // CANONICAL FORM
         Channel(void);
-        Channel(const Channel&);
-        Channel& operator=(const Channel&);
+        Channel(const Channel& other);
+        Channel& operator=(const Channel& other);
     public :
 
         // CONSTRUCTOR / DESTRUCTOR
