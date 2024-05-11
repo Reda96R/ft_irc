@@ -111,8 +111,18 @@ void	Commands::joinCommand( Client& client ){
 }
 
 void	Commands::privmsgCommand( Client& client ){
-	std::cout << "entering the privmsg command" << std::endl;
-	(void) client;
+	//TODO:
+	// √ check if not REGISTERED
+	// * check msg destination
+	// * check text msg validity
+
+	if (!client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		return ;
+	}
+	if (client.getInput().arguments.empty())
+		std::cout << RED << "Nothing to be sent" << RESET << std::endl;
+	std::cout << client.getInput().arguments[0] << std::endl;
 }
 
 

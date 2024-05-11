@@ -63,6 +63,9 @@ bool	commandParser( std::string& input, Client& client ){
 
 	// Parsing the command's arguments if found
 	if (args){
+		//TODO:
+		 //check if there's ':' at the start of arguments
+
 		argumentEnd = input.find(' ', position);
 		if (argumentEnd == std::string::npos){
 			tmp = input.substr(position, argumentEnd);
