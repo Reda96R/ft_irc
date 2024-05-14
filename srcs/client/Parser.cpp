@@ -93,6 +93,12 @@ bool	commandParser( std::string& input, Client& client ){
 	// Command execution
 	void (Commands::*cmd)(Client&) = it->second;
 	(commands.*cmd)(client);
+
+	std::cout << "command ---> " << client.getInput().command << std::endl;
+	for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
+		std::cout << "args ---> " << client.getInput().arguments[i] << std::endl;
+	}
+
 	client.clearInput();
 
 	return (true);

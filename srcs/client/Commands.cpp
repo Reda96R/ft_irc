@@ -2,6 +2,7 @@
 #include "../../includes/macros.hpp"
 #include <string>
 #include <sys/signal.h>
+#include <vector>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -27,6 +28,14 @@ std::map<std::string, void (Commands::*) ( Client& )> Commands::getCommandMap( v
 }
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
+bool	trailingCheck( std::vector<std::string> arguments ){
+	for (size_t i = 0; i < arguments.size(); ++i){
+		if (arguments[i].at(0) == ':')
+			return (true);
+	}
+	return (false);
+}
+
 void	Commands::passCommand( Client& client ){
 	std::string pass = "pass"; // this will be replaced with server password
 
@@ -110,6 +119,27 @@ void	Commands::joinCommand( Client& client ){
 	(void) client;
 }
 
+
+
+// Target: might be multiple targets
+// Message: might have trailing
+//TODO:
+//bool privmsganalyser(arguments){
+//	there might be a struct containing:
+//	  -> stack for the targets
+//	  -> string representing the message
+//
+//	check if there is one or more targets
+//	  parse target(s) in a stack
+//	  check if the target(s) are valid
+//
+//	check for the trailing
+//}
+
+// bool	privmsgAnalyser( std::vector<std::string> arguments ){
+// }
+
+
 void	Commands::privmsgCommand( Client& client ){
 	//TODO:
 	// √ check if not REGISTERED
@@ -122,7 +152,20 @@ void	Commands::privmsgCommand( Client& client ){
 	}
 	if (client.getInput().arguments.empty())
 		std::cout << RED << "Nothing to be sent" << RESET << std::endl;
-	std::cout << client.getInput().arguments[0] << std::endl;
+
+	if (trailingCheck(client.getInput().arguments)){
+		if (client.getInput().arguments.at(0).at(0) == ':'){
+			std::cout << RED << "No Target" << RESET << std::endl;
+			return ;
+		}
+		else if (client.getInput().arguments.at(1).at(0) == ':'){
+			for (size_t i = 1; i < client.getInput().arguments.size(); ++i)
+				std::cout << client.getInput().arguments[i] << " ";
+			std::cout << std::endl;
+			return ;
+		}
+	}
+	std::cout << client.getInput().arguments.front() << std::endl;
 }
 
 
