@@ -26,9 +26,9 @@ endif
 all: $(NAME)
 
 #::::::::::::::::SERV:::::::::::::::#
-S_FILES 	= 
+S_FILES 	= init
 
-S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(R_FILES))))
+S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(S_FILES))))
 
 #:::::::::::::::CLNT::::::::::::::::#
 C_FILES 	= Parser Client Commands
