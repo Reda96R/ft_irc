@@ -64,7 +64,7 @@ bool	commandParser( std::string& input, Client& client ){
 	// Parsing the command's arguments if found
 	if (args){
 		//TODO:
-		 //check if there's ':' at the start of arguments
+		 //check if there's ':' at the start of arguments if there's one count the arguments from the : as one whole string
 
 		argumentEnd = input.find(' ', position);
 		if (argumentEnd == std::string::npos){
@@ -74,6 +74,11 @@ bool	commandParser( std::string& input, Client& client ){
 		else{
 			while (argumentEnd != std::string::npos){
 				tmp = input.substr(position, argumentEnd - position);
+				if (tmp.at(0) == ':'){
+					tmp = input.substr(position, input.size() - position);
+					client.setInput("arguments", tmp);
+					break ;
+				}
 				client.setInput("arguments", tmp);
 				position = input.find_first_not_of(' ', argumentEnd);
 				if (position == std::string::npos)
@@ -94,9 +99,9 @@ bool	commandParser( std::string& input, Client& client ){
 	void (Commands::*cmd)(Client&) = it->second;
 	(commands.*cmd)(client);
 
-	std::cout << "command ---> " << client.getInput().command << std::endl;
+	std::cout << YELLOW << "command ---> " << client.getInput().command << RESET << std::endl;
 	for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
-		std::cout << "args ---> " << client.getInput().arguments[i] << std::endl;
+		std::cout << YELLOW << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
 	}
 
 	client.clearInput();

@@ -2,6 +2,7 @@
 # define STRUCTS_HPP
 
 # include <string>
+# include <stack>
 # include <vector>
 
 //::::::::::::::::::Client:::::::::::::::::::::::::::
@@ -20,5 +21,9 @@ struct s_ircCommand {
 	std::vector<std::string>	  arguments;
 };
 
+struct s_prvMsgCommand {
+	std::string					  message;
+	std::stack<std::string>		  targets;
+};
 
 #endif

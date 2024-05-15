@@ -27,6 +27,7 @@ class Commands {
 		void	userCommand( Client& client );
 		void	joinCommand( Client& client );
 		void	privmsgCommand( Client& client );
+		bool	privmsgAnalyser(std::vector<std::string> );
 
 			/* ~~~channel commands ~~~ */
 		void	topicCommand( Client& client );

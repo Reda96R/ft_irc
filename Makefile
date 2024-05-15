@@ -12,7 +12,7 @@ CC 			= c++
 NAME 		= ircserv
 HEADER 		= -I includes
 MAIN 		= r_testing_main  
-M_OBJS 		=$(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
+M_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 
 #::::::::::::::::MLX:::::::::::::::#
 ifeq ($(OS), Darwin)
