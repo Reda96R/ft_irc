@@ -27,7 +27,7 @@ int	  main ( void ){
 	std::cout << CYAN << "::::::::::::::::::::::::::::::::::::::::::::::" << RESET << std::endl;
 	std::cout << std::endl;
 
-	input = "PRIVMSG target00,target01  :this is a message";
+	input = "PRIVMSG &target00,#target01  :this is a message";
 	commandParser(input, client);
 
 	// std::cout << "prefix---> " << client.getInput().prefix << std::endl;

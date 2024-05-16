@@ -1,10 +1,4 @@
 #include "../../includes/Commands.hpp"
-#include "../../includes/macros.hpp"
-#include <cstddef>
-#include <sstream>
-#include <string>
-#include <sys/signal.h>
-#include <vector>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -22,7 +16,6 @@ Commands& Commands::operator=( const Commands& rhs ){
 	}
 	return (*this);
 }
-
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
 std::map<std::string, void (Commands::*) ( Client& )> Commands::getCommandMap( void ) const{
@@ -121,48 +114,6 @@ void	Commands::joinCommand( Client& client ){
 	(void) client;
 }
 
-//TODO:
-//bool privmsganalyser(arguments){
-//	√ check if there is one or more targets
-//	   √ parse target(s) in a stack
-//	   √ check if the target(s) are valid
-//	√ parse the message text
-//	   √ check for the trailing
-//}
-
-
-bool	Commands::privmsgAnalyser( std::vector<std::string> arguments ){
-	if (arguments.empty() || arguments.size() < 2){
-		if (arguments.front().at(0) == ':')
-			std::cout << RED << "No Target" << RESET << std::endl;
-		else
-			std::cout << RED << "Nothing to be sent" << RESET << std::endl;
-		return false;
-	}
-
-	s_prvMsgCommand			  privmsgInput;
-	//Target parsing
-	std::istringstream	iss(arguments.front());
-	std::string			target;
-
-	while (getline(iss, target, ','))
-		privmsgInput.targets.push(target);
-	
-	//Message parsing
-	privmsgInput.message = arguments.at(1);
-	if (privmsgInput.message.at(0) == ':')
-		privmsgInput.message = privmsgInput.message.substr(1, privmsgInput.message.size() - 1);
-
-	std::cout << "message---> " << privmsgInput.message << std::endl;
-	for (size_t i = 0; i <= privmsgInput.targets.size(); ++i){
-		std::cout << "target---> " << privmsgInput.targets.top() << std::endl;
-		privmsgInput.targets.pop();
-	}
-
-	return (true);
-}
-
-
 void	Commands::privmsgCommand( Client& client ){
 	//TODO:
 	// √ check if not REGISTERED
@@ -173,10 +124,13 @@ void	Commands::privmsgCommand( Client& client ){
 		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
 		return ;
 	}
-	if (!privmsgAnalyser( client.getInput().arguments))
+
+	s_prvMsgCommand			  privmsgInput;
+
+	if (!privmsgAnalyser( client.getInput().arguments, privmsgInput))
 		std::cout << RED << "failed" << RESET << std::endl;
 	else{
-		std::cout << GREEN << "success" << RESET << std::endl;
+		// std::cout << GREEN << "success" << RESET << std::endl;
 		//TODO:
 		//	- check if the target is user or a channel:
 		//	  * channel:
@@ -186,6 +140,16 @@ void	Commands::privmsgCommand( Client& client ){
 		//	  * user:
 		//		* search for the user if found sent the message if not return nosuchnick
 		//
+
+		while (!privmsgInput.targets.empty()){
+			if (isValidChannelName(privmsgInput.targets.top())){
+				std::cout << GREEN << "valid channel" << RESET << std::endl;
+			}
+			else{
+				std::cout << RED << "invalid channel" << RESET << std::endl;
+			}
+			privmsgInput.targets.pop();
+		}
 	}
 }
 

@@ -1,9 +1,10 @@
 #ifndef COMMANDS_HPP
 # define COMMANDS_HPP
 
-# include "Client.hpp"
-# include "Structs.hpp"
 # include <map>
+# include "Client.hpp"
+# include "Helpers.hpp"
+# include "macros.hpp"
 
 
 class Commands {
@@ -27,7 +28,6 @@ class Commands {
 		void	userCommand( Client& client );
 		void	joinCommand( Client& client );
 		void	privmsgCommand( Client& client );
-		bool	privmsgAnalyser(std::vector<std::string> );
 
 			/* ~~~channel commands ~~~ */
 		void	topicCommand( Client& client );
