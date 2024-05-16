@@ -111,33 +111,38 @@ void	Client::setInput( std::string target, std::string& value ){
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 void	Client::clientAdd( void ){
+	// TODO: check if the client is connected succesfully or not
 	Client		newClient;
-	// socklen_t	addressLen = sizeof(newClient.getAddress());
-	// int			serverSocket = 0; // this will be replaced with the actuall server socket
+    socklen_t	len = sizeof(newClient.getAddress());
 
-	// newClient.setSocket(accept(serverSocket, (struct sockaddr *) &newClient.getAddress(), &addressLen));
-	/*
-	TODO: check if the client is connected succesfully or not
-	 if (newClient.getSocket() < 0)
-	 	error;
-	 else
-		 std::cout << GREEN << "New client connected" << std::endl;
-	*/
-	newClient.setPollFd(newClient.getSocket());
+    newClient.setSocket(accept(this->getSocket(), &newClient.getAddress(), &len));
+    if (newClient.getSocket() == -1)
+        std::cerr << RED << "Error: accept" << RESET << std::endl;
+    else
+        std::cout << GREEN << "New client connected" << RESET << std::endl;
+    newClient.setPollFd(newClient.getSocket());
+    // add the new client to the list of clients
+    // struct needs to be defined in the header file
 }
 
-bool	Client::clientRecv( char *recv){
-	bool				isInputValid = false;
-	std::string			tmp;
-	std::istringstream	iss(recv);
+void	Client::clientRecv( char *recv){
+    // TODO: receive the message from the client
+    int		ret;
+    char	buf[1024];
+    std::string		message;
 
-	// while (getline(iss, tmp)){
-	// 	if (commandParser(tmp))
-	// 		isInputValid = true;
-	// 	else
-	// 		isInputValid = false;
-	// }
-	return (isInputValid);
+    ret = recv(this->getSocket(), buf, 1024, 0);
+    if (ret == -1)
+        std::cerr << RED << "Error: receiving Failed" << RESET << std::endl;
+    else if (ret == 0)
+        std::cerr << RED << "Error: client disconnected" << RESET << std::endl;
+    else
+    {
+        buf[ret] = '\0';
+        message = buf;
+        std::cout << GREEN << "Message received: " << message << RESET << std::endl;
+        commandParser(message, *this);
+    }
 }
 
 void	Client::clearInput( void ){
