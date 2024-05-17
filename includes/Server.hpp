@@ -9,6 +9,7 @@
 #include <sys/fcntl.h>
 #include <sys/socket.h>
 # include <netinet/in.h>
+# include <poll.h>
 
 struct ServerInfo {
     int sockfd;

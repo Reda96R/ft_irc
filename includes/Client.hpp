@@ -4,6 +4,7 @@
 # include <iostream>
 # include "Structs.hpp"
 # include <netinet/in.h>
+# include <vector>
 
 class Client {
 	private:
@@ -48,7 +49,7 @@ class Client {
 		struct s_ircCommand		getInput( void ) const;
 
 		//::::::::Methods:::::::::::::::
-		void				clientAdd( void );
+		bool				clientAdd( int serverSocket, std::vector<Client>& clients );
 		bool				clientRecv( char *recv);
 
 		void				clearInput( void );

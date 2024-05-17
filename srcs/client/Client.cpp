@@ -110,20 +110,25 @@ void	Client::setInput( std::string target, std::string& value ){
 }
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
-void	Client::clientAdd( void ){
-	Client		newClient;
-	// socklen_t	addressLen = sizeof(newClient.getAddress());
-	// int			serverSocket = 0; // this will be replaced with the actuall server socket
+bool	Client::clientAdd( int serverSocket, std::vector<Client>& clients){
+        Client new_client;
+        sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
 
-	// newClient.setSocket(accept(serverSocket, (struct sockaddr *) &newClient.getAddress(), &addressLen));
-	/*
-	TODO: check if the client is connected succesfully or not
-	 if (newClient.getSocket() < 0)
-	 	error;
-	 else
-		 std::cout << GREEN << "New client connected" << std::endl;
-	*/
-	newClient.setPollFd(newClient.getSocket());
+        int client_sockfd = accept(serverSocket, (struct sockaddr *) &client_addr, &client_len);
+        if (client_sockfd < 0) {
+            std::cerr << RED << "Error accepting client connection" << RESET << std::endl;
+            return false;
+        } else {
+            std::cout << GREEN << "New client connected" << RESET << std::endl;
+        }
+
+        new_client.setSocket(client_sockfd);
+        new_client.setAddress(client_addr);
+        new_client.setPollFd(client_sockfd);
+
+        clients.push_back(new_client);
+		return true;
 }
 
 bool	Client::clientRecv( char *recv){
