@@ -1,9 +1,10 @@
 #ifndef COMMANDS_HPP
 # define COMMANDS_HPP
 
-# include "Client.hpp"
-# include "Structs.hpp"
 # include <map>
+# include "Client.hpp"
+# include "Helpers.hpp"
+# include "macros.hpp"
 
 
 class Commands {

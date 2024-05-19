@@ -11,6 +11,7 @@ class Client {
 		std::string				clientNickname;
 		std::string				clientUsername;
 		bool					clientIsOperator; // true if the client is an operator and not a regular user
+
 		struct s_status			clientStatus;
 		struct s_ircCommand		clientInput;
 

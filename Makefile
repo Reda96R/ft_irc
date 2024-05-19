@@ -11,6 +11,8 @@ CC 			= c++
 #:::::::::::::::MANDATORY:::::::::::::::#
 NAME 		= ircserv
 HEADER 		= -I includes
+MAIN 		= r_testing_main  
+M_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 MAIN 		= a_main_testing
 M_OBJS 		=$(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 
@@ -31,7 +33,7 @@ S_FILES 	= init
 S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(S_FILES))))
 
 #:::::::::::::::CLNT::::::::::::::::#
-C_FILES 	= Parser Client Commands
+C_FILES 	= Parser Client Commands Helpers
 
 C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(C_FILES))))
 

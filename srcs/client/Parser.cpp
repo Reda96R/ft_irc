@@ -1,7 +1,7 @@
-#include "../../includes/Client.hpp"
-#include "../../includes/macros.hpp"
-#include "../../includes/Commands.hpp"
-#include <string>
+# include "../../includes/Client.hpp"
+# include "../../includes/macros.hpp"
+# include "../../includes/Commands.hpp"
+# include <string>
 
 //TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
@@ -63,9 +63,6 @@ bool	commandParser( std::string& input, Client& client ){
 
 	// Parsing the command's arguments if found
 	if (args){
-		//TODO:
-		 //check if there's ':' at the start of arguments
-
 		argumentEnd = input.find(' ', position);
 		if (argumentEnd == std::string::npos){
 			tmp = input.substr(position, argumentEnd);
@@ -74,6 +71,11 @@ bool	commandParser( std::string& input, Client& client ){
 		else{
 			while (argumentEnd != std::string::npos){
 				tmp = input.substr(position, argumentEnd - position);
+				if (tmp.at(0) == ':'){
+					tmp = input.substr(position, input.size() - position);
+					client.setInput("arguments", tmp);
+					break ;
+				}
 				client.setInput("arguments", tmp);
 				position = input.find_first_not_of(' ', argumentEnd);
 				if (position == std::string::npos)
@@ -93,6 +95,12 @@ bool	commandParser( std::string& input, Client& client ){
 	// Command execution
 	void (Commands::*cmd)(Client&) = it->second;
 	(commands.*cmd)(client);
+
+	// std::cout << YELLOW << "command ---> " << client.getInput().command << RESET << std::endl;
+	// for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
+	// 	std::cout << YELLOW << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
+	// }
+
 	client.clearInput();
 
 	return (true);

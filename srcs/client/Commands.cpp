@@ -1,7 +1,4 @@
 #include "../../includes/Commands.hpp"
-#include "../../includes/macros.hpp"
-#include <string>
-#include <sys/signal.h>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -20,13 +17,20 @@ Commands& Commands::operator=( const Commands& rhs ){
 	return (*this);
 }
 
-
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
 std::map<std::string, void (Commands::*) ( Client& )> Commands::getCommandMap( void ) const{
 	return (this->commandsMap);
 }
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
+bool	trailingCheck( std::vector<std::string> arguments ){
+	for (size_t i = 0; i < arguments.size(); ++i){
+		if (arguments[i].at(0) == ':')
+			return (true);
+	}
+	return (false);
+}
+
 void	Commands::passCommand( Client& client ){
 	std::string pass = "pass"; // this will be replaced with server password
 
@@ -120,11 +124,34 @@ void	Commands::privmsgCommand( Client& client ){
 		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
 		return ;
 	}
-	if (client.getInput().arguments.empty())
-		std::cout << RED << "Nothing to be sent" << RESET << std::endl;
-	std::cout << client.getInput().arguments[0] << std::endl;
-}
 
+	s_prvMsgCommand			  privmsgInput;
+
+	if (!privmsgAnalyser( client.getInput().arguments, privmsgInput))
+		std::cout << RED << "failed" << RESET << std::endl;
+	else{
+		// std::cout << GREEN << "success" << RESET << std::endl;
+		//TODO:
+		//	- check if the target is user or a channel:
+		//	  * channel:
+		//		* check if the user is a member of the channel (client class will contain
+		//		data structure that contains the names of the channels that the client is part of)
+		//		 -->check if the channel exists (to send nosuchchannel or cannotsendtochan)
+		//	  * user:
+		//		* search for the user if found sent the message if not return nosuchnick
+		//
+
+		while (!privmsgInput.targets.empty()){
+			if (isValidChannelName(privmsgInput.targets.top())){
+				std::cout << GREEN << "valid channel" << RESET << std::endl;
+			}
+			else{
+				std::cout << RED << "invalid channel" << RESET << std::endl;
+			}
+			privmsgInput.targets.pop();
+		}
+	}
+}
 
 Commands::Commands( const Commands& src ){
 	*this = src;
