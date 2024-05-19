@@ -50,7 +50,7 @@ class Client {
 		struct s_ircCommand		getInput( void ) const;
 
 		//::::::::Methods:::::::::::::::
-		bool				clientAdd( int serverSocket, std::vector<Client>& clients );
+		bool				clientAdd( int serverSocket, std::vector<Client>& clients);
 		bool				clientRecv( char *recv);
 
 		void				clearInput( void );

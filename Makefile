@@ -28,7 +28,7 @@ endif
 all: $(NAME)
 
 #::::::::::::::::SERV:::::::::::::::#
-S_FILES 	= init
+S_FILES 	= init poll
 
 S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(S_FILES))))
 

@@ -111,7 +111,6 @@ void	Client::setInput( std::string target, std::string& value ){
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 bool	Client::clientAdd( int serverSocket, std::vector<Client>& clients){
-        Client new_client;
         sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
 
@@ -123,11 +122,11 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client>& clients){
             std::cout << GREEN << "New client connected" << RESET << std::endl;
         }
 
-        new_client.setSocket(client_sockfd);
-        new_client.setAddress(client_addr);
-        new_client.setPollFd(client_sockfd);
+        this->setSocket(client_sockfd);
+        this->setAddress(client_addr);
+        this->setPollFd(client_sockfd);
 
-        clients.push_back(new_client);
+        clients.push_back(*this);
 		return true;
 }
 
