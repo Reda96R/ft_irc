@@ -123,6 +123,7 @@ void	Client::clientAdd( void ){
     else
         std::cout << GREEN << "New client connected" << RESET << std::endl;
     newClient.setPollFd(newClient.getSocket());
+
     // add the new client to the list of clients
     // struct needs to be defined in the header file
 }
