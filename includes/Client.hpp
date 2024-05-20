@@ -50,7 +50,7 @@ class Client {
 
 		//::::::::Methods:::::::::::::::
 		void				clientAdd( void );
-		bool				clientRecv( char *recv);
+		bool				clientRecv( void );
 
 		void				clearInput( void );
 };

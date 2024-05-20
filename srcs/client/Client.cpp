@@ -114,35 +114,45 @@ void	Client::clientAdd( void ){
 	// TODO: check if the client is connected succesfully or not
 	Client		newClient;
     socklen_t	len = sizeof(newClient.getAddress());
-
-    newClient.setSocket(accept(this->getSocket(), &newClient.getAddress(), &len));
+	struct sockaddr_in addr = newClient.getAddress();
+	
+	newClient.setSocket(accept(this->getSocket(), (struct sockaddr *)&addr, &len));
+	newClient.setAddress(addr);
     if (newClient.getSocket() == -1)
         std::cerr << RED << "Error: accept" << RESET << std::endl;
     else
         std::cout << GREEN << "New client connected" << RESET << std::endl;
     newClient.setPollFd(newClient.getSocket());
+
     // add the new client to the list of clients
     // struct needs to be defined in the header file
 }
 
-void	Client::clientRecv( char *recv){
+bool	Client::clientRecv(){
     // TODO: receive the message from the client
     int		ret;
     char	buf[1024];
     std::string		message;
 
-    ret = recv(this->getSocket(), buf, 1024, 0);
+    ret = recv(this->getSocket(), buf, sizeof(buf), 0);
     if (ret == -1)
+	{
         std::cerr << RED << "Error: receiving Failed" << RESET << std::endl;
-    else if (ret == 0)
+		return (false);
+	}
+	else if (ret == 0)
+	{
         std::cerr << RED << "Error: client disconnected" << RESET << std::endl;
-    else
+		return (false);
+	}
+	else
     {
         buf[ret] = '\0';
         message = buf;
         std::cout << GREEN << "Message received: " << message << RESET << std::endl;
         commandParser(message, *this);
     }
+	return (true);
 }
 
 void	Client::clearInput( void ){
