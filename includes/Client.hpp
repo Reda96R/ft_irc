@@ -4,6 +4,9 @@
 # include <iostream>
 # include "Structs.hpp"
 # include <netinet/in.h>
+# include <vector>
+# include <string.h>
+# include <poll.h>
 
 class Client {
 	private:
@@ -49,7 +52,9 @@ class Client {
 		struct s_ircCommand		getInput( void ) const;
 
 		//::::::::Methods:::::::::::::::
-		void				clientAdd( void );
+		bool				clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<struct pollfd>& fds);
+		// bool				clientRecv( char *recv);
+		// void				clientAdd( void );
 		bool				clientRecv( void );
 
 		void				clearInput( void );

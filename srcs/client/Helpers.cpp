@@ -34,3 +34,31 @@ bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privm
 
 	return (true);
 }
+
+bool	trailingCheck( std::vector<std::string> arguments ){
+	for (size_t i = 0; i < arguments.size(); ++i){
+		if (arguments[i].at(0) == ':')
+			return (true);
+	}
+	return (false);
+}
+
+
+#include <iostream>
+#include <algorithm>
+#include <string>
+#include <iterator>
+
+void compareStrings(const std::string& str1, const std::string& str2) {
+    std::pair<std::string::const_iterator, std::string::const_iterator> result = std::mismatch(str1.begin(), str1.end(), str2.begin());
+
+    if (result.first == str1.end() && result.second == str2.end()) {
+        std::cout << "The strings are identical." << std::endl;
+    } else {
+        std::cout << "The strings differ at position " 
+                  << std::distance(str1.begin(), result.first) << std::endl;
+        std::cout << "String 1 has: " << *result.first << std::endl;
+        std::cout << "String 2 has: " << *result.second << std::endl;
+    }
+}
+

@@ -7,6 +7,8 @@
 int main(int argc, char **argv)
 {
     ServerInfo server_info;
+    std::vector<Client*> clients;
+    std::vector<pollfd> fds;
 
     if (!initialize_server(argc, argv, server_info))
         return 1;
@@ -14,10 +16,20 @@ int main(int argc, char **argv)
     // Start listening for incoming connections
     listen(server_info.sockfd, 5);
 
-    while(true) {
-        // Pass server_info to the functions that handle connections, authentication, etc.
-    }
+    struct pollfd pfd;
+    memset(&pfd, 0, sizeof(pfd));
+    pfd.fd = server_info.sockfd;
+    pfd.events = POLLIN;
+    pfd.revents = 0;
+    fds.push_back(pfd);
 
+    while(true) {
+        handlingPolling(server_info, fds, clients);
+
+}
     close(server_info.sockfd);
     return 0;
+
 }
+
+

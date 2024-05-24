@@ -18,12 +18,14 @@ bool	commandParser( std::string& input, Client& client ){
 	
 	Commands		commands;
 	t_commandsMap	commandsMap = commands.getCommandMap();
-	
 	// if (tmp.eof()){
 	// 	std::cerr << "eof error" << std::endl;
 	// 	return (false);
 	// }
 	
+	if (!input.empty() && input[input.size() - 1] == '\r')
+		input = input.substr(0, input.size() - 1);
+
 	// Parsing prefix if found
 	if (!input.empty() && input[position] == ':'){
 		position++;

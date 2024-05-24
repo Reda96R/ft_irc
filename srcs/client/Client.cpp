@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <string>
 #include <sstream>
+#include <strstream>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Client::Client( void ){
@@ -110,34 +111,78 @@ void	Client::setInput( std::string target, std::string& value ){
 }
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
-void	Client::clientAdd( void ){
-	// TODO: check if the client is connected succesfully or not
-	Client		newClient;
-    socklen_t	len = sizeof(newClient.getAddress());
-	struct sockaddr_in addr = newClient.getAddress();
-	
-	newClient.setSocket(accept(this->getSocket(), (struct sockaddr *)&addr, &len));
-	newClient.setAddress(addr);
-    if (newClient.getSocket() == -1)
-        std::cerr << RED << "Error: accept" << RESET << std::endl;
-    else
-        std::cout << GREEN << "New client connected" << RESET << std::endl;
-    newClient.setPollFd(newClient.getSocket());
+bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<pollfd>& fds){
+        sockaddr_in client_addr;
+        socklen_t client_len = sizeof(client_addr);
 
-    // add the new client to the list of clients
-    // struct needs to be defined in the header file
+        int client_sockfd = accept(serverSocket, (struct sockaddr *) &client_addr, &client_len);
+        if (client_sockfd < 0) {
+            std::cerr << RED << "Error accepting client connection" << RESET << std::endl;
+            return false;
+        } else {
+            std::cout << GREEN << "New client connected" << RESET << std::endl;
+        }
+
+        this->setSocket(client_sockfd);
+        this->setAddress(client_addr);
+        this->setPollFd(client_sockfd);
+
+		struct pollfd pfd;
+		memset(&pfd, 0, sizeof(pfd));
+		pfd.fd = getSocket();
+		pfd.events = POLLIN;
+		pfd.revents = 0;
+		fds.push_back(pfd);
+        clients.push_back(this);
+		
+		return true;
 }
 
+// bool	Client::clientRecv( char *recv){
+// 	bool				isInputValid = false;
+// 	std::string			tmp;
+// 	std::istringstream	iss(recv);
+
+// 	// while (getline(iss, tmp)){
+// 	// 	if (commandParser(tmp))
+// 	// 		isInputValid = true;
+// 	// 	else
+// 	// 		isInputValid = false;
+// 	// }
+// 	return (isInputValid);
+
+
+
+// void	Client::clientAdd( void ){
+// 	// TODO: check if the client is connected succesfully or not
+// 	Client		newClient;
+//     socklen_t	len = sizeof(newClient.getAddress());
+// 	struct sockaddr_in addr = newClient.getAddress();
+	
+// 	newClient.setSocket(accept(this->getSocket(), (struct sockaddr *)&addr, &len));
+// 	newClient.setAddress(addr);
+//     if (newClient.getSocket() == -1)
+//         std::cerr << RED << "Error: accept" << RESET << std::endl;
+//     else
+//         std::cout << GREEN << "New client connected" << RESET << std::endl;
+//     newClient.setPollFd(newClient.getSocket());
+
+//     // add the new client to the list of clients
+//     // struct needs to be defined in the header file
+// }
+#include <stdio.h>
 bool	Client::clientRecv(){
     // TODO: receive the message from the client
     int		ret;
+	std::cout << "receiving...\n";
     char	buf[1024];
     std::string		message;
+	std::cout << "Socket: " << this->getSocket() << std::endl;
 
     ret = recv(this->getSocket(), buf, sizeof(buf), 0);
     if (ret == -1)
 	{
-        std::cerr << RED << "Error: receiving Failed" << RESET << std::endl;
+        perror("recv");
 		return (false);
 	}
 	else if (ret == 0)
@@ -150,8 +195,12 @@ bool	Client::clientRecv(){
         buf[ret] = '\0';
         message = buf;
         std::cout << GREEN << "Message received: " << message << RESET << std::endl;
-        commandParser(message, *this);
-    }
+		std::stringstream iss(message);
+		std::string tmp;
+		while (getline(iss, tmp))
+			getline(iss, tmp);
+		commandParser(tmp, *this);
+	}
 	return (true);
 }
 
