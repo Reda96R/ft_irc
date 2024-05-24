@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <string>
 #include <sstream>
+#include <strstream>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Client::Client( void ){
@@ -194,8 +195,12 @@ bool	Client::clientRecv(){
         buf[ret] = '\0';
         message = buf;
         std::cout << GREEN << "Message received: " << message << RESET << std::endl;
-        commandParser(message, *this);
-    }
+		std::stringstream iss(message);
+		std::string tmp;
+		while (getline(iss, tmp))
+			getline(iss, tmp);
+		commandParser(tmp, *this);
+	}
 	return (true);
 }
 

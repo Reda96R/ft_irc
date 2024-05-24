@@ -23,22 +23,18 @@ std::map<std::string, void (Commands::*) ( Client& )> Commands::getCommandMap( v
 }
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
-bool	trailingCheck( std::vector<std::string> arguments ){
-	for (size_t i = 0; i < arguments.size(); ++i){
-		if (arguments[i].at(0) == ':')
-			return (true);
-	}
-	return (false);
-}
 
 void	Commands::passCommand( Client& client ){
 	std::string pass = "pass"; // this will be replaced with server password
+
+	if (trailingCheck(client.getInput().arguments))
+		return ;
 
 	if (client.getStatus().authenticated)
 		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
 	else if (client.getInput().arguments.empty())
 		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
-	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments[0] == pass)
+	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.at(0) == pass)
 	{
 		client.setStatus("authenticated", true);
 		client.setStatus("pass", true);
@@ -55,6 +51,9 @@ void	Commands::nickCommand( Client& client ){
 	// √ check if command's parameters exist
 	// ---> check if the provided nickname already exsits <---
 	// √ set the nick name
+
+	if (trailingCheck(client.getInput().arguments))
+		return ;
 
 	if (!client.getStatus().authenticated){
 		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
@@ -84,6 +83,9 @@ void	Commands::userCommand( Client& client ){
 	// √ check if already REGISTERED
 	// √ check if command's parameters exist if not set username to unknown
 	// √ set the username
+
+	if (trailingCheck(client.getInput().arguments))
+		return ;
 
 	if (!client.getStatus().authenticated){
 		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
