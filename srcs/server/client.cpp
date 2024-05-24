@@ -29,6 +29,8 @@ int main() {
     }
     
     send(sock, message, strlen(message), 0);
+    while (1) {
+    }
     printf("Message sent\n");
 
     return 0;

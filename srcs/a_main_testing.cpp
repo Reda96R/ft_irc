@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
     ServerInfo server_info;
-    std::vector<Client> clients;
+    std::vector<Client*> clients;
     std::vector<pollfd> fds;
 
     if (!initialize_server(argc, argv, server_info))
@@ -17,6 +17,7 @@ int main(int argc, char **argv)
     listen(server_info.sockfd, 5);
 
     struct pollfd pfd;
+    memset(&pfd, 0, sizeof(pfd));
     pfd.fd = server_info.sockfd;
     pfd.events = POLLIN;
     pfd.revents = 0;
