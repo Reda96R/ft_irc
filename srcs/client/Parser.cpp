@@ -1,13 +1,11 @@
 # include "../../includes/Client.hpp"
 # include "../../includes/macros.hpp"
 # include "../../includes/Commands.hpp"
-# include <string>
 
 //TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
 
-// Try using a class Singlton
-bool	commandParser( std::string& input, Client& client ){
+bool	commandParser( std::string& input, Client& client, struct ServerInfo& serverInfo){
 	size_t			position = 0;
 
 	size_t			prefixEnd;
@@ -18,10 +16,11 @@ bool	commandParser( std::string& input, Client& client ){
 	
 	Commands		commands;
 	t_commandsMap	commandsMap = commands.getCommandMap();
-	// if (tmp.eof()){
-	// 	std::cerr << "eof error" << std::endl;
-	// 	return (false);
-	// }
+
+	if (input.empty()){
+		std::cerr << "eof error" << std::endl;
+		return (false);
+	}
 	
 	if (!input.empty() && input[input.size() - 1] == '\r')
 		input = input.substr(0, input.size() - 1);
@@ -95,8 +94,8 @@ bool	commandParser( std::string& input, Client& client ){
 	// check if there's more left
 
 	// Command execution
-	void (Commands::*cmd)(Client&) = it->second;
-	(commands.*cmd)(client);
+	void (Commands::*cmd)(Client&, struct ServerInfo&) = it->second;
+	(commands.*cmd)(client, serverInfo);
 
 	// std::cout << YELLOW << "command ---> " << client.getInput().command << RESET << std::endl;
 	// for (size_t i = 0; i < client.getInput().arguments.size(); ++i){

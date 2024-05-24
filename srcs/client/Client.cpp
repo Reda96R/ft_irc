@@ -1,9 +1,8 @@
 #include "../../includes/Client.hpp"
 #include "../../includes/macros.hpp"
 #include <netinet/in.h>
-#include <string>
 #include <sstream>
-#include <strstream>
+#include <stdio.h>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Client::Client( void ){
@@ -170,23 +169,20 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
 //     // add the new client to the list of clients
 //     // struct needs to be defined in the header file
 // }
-#include <stdio.h>
-bool	Client::clientRecv(){
-    // TODO: receive the message from the client
-    int		ret;
+bool	Client::clientRecv( struct ServerInfo& serverInfo ){
+	// TODO: receive the message from the clients
+	int		ret;
 	std::cout << "receiving...\n";
     char	buf[1024];
     std::string		message;
 	std::cout << "Socket: " << this->getSocket() << std::endl;
 
     ret = recv(this->getSocket(), buf, sizeof(buf), 0);
-    if (ret == -1)
-	{
+	if (ret == -1){
         perror("recv");
 		return (false);
 	}
-	else if (ret == 0)
-	{
+	else if (ret == 0){
         std::cerr << RED << "Error: client disconnected" << RESET << std::endl;
 		return (false);
 	}
@@ -198,8 +194,7 @@ bool	Client::clientRecv(){
 		std::stringstream iss(message);
 		std::string tmp;
 		while (getline(iss, tmp))
-			getline(iss, tmp);
-		commandParser(tmp, *this);
+			commandParser(tmp, *this, serverInfo);
 	}
 	return (true);
 }

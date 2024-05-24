@@ -19,6 +19,7 @@ struct ServerInfo {
     int port;
     std::string password;
     sockaddr_in serv_addr;
+    std::vector<Client*> clients;
 };
 
 bool initialize_server(int argc, char** argv, ServerInfo &server_info);

@@ -55,13 +55,14 @@ class Client {
 		bool				clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<struct pollfd>& fds);
 		// bool				clientRecv( char *recv);
 		// void				clientAdd( void );
-		bool				clientRecv( void );
+		bool				clientRecv( struct ServerInfo& serverInfo );
+		// bool				clientRecv( void );
 
 		void				clearInput( void );
 };
 
 
 
-bool	commandParser( std::string&, Client& );
+bool	commandParser( std::string&, Client&, struct ServerInfo& serverInfo);
 
 #endif // !CLIENT_HPP

@@ -14,7 +14,7 @@ void handlingPolling(ServerInfo& server_info, std::vector<pollfd>& fds, std::vec
                         continue;
                     }
                 } else {
-                       if (!clients[i-1]->clientRecv()) {
+                       if (!clients[i-1]->clientRecv(server_info)) {
                         fds.erase(fds.begin() + i);
                         clients.erase(clients.begin() + i - 1);
                        }

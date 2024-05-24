@@ -7,7 +7,6 @@
 int main(int argc, char **argv)
 {
     ServerInfo server_info;
-    std::vector<Client*> clients;
     std::vector<pollfd> fds;
 
     if (!initialize_server(argc, argv, server_info))
@@ -24,7 +23,7 @@ int main(int argc, char **argv)
     fds.push_back(pfd);
 
     while(true) {
-        handlingPolling(server_info, fds, clients);
+        handlingPolling(server_info, fds, server_info.clients);
 
 }
     close(server_info.sockfd);

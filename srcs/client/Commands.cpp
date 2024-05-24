@@ -18,13 +18,13 @@ Commands& Commands::operator=( const Commands& rhs ){
 }
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
-std::map<std::string, void (Commands::*) ( Client& )> Commands::getCommandMap( void ) const{
+std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> Commands::getCommandMap( void ) const{
 	return (this->commandsMap);
 }
 
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 
-void	Commands::passCommand( Client& client ){
+void	Commands::passCommand( Client& client, struct ServerInfo& ){
 	std::string pass = "pass"; // this will be replaced with server password
 
 	if (trailingCheck(client.getInput().arguments))
@@ -44,7 +44,7 @@ void	Commands::passCommand( Client& client ){
 		std::cerr << RED << client.getNickname() << " password not accepted" << RESET << std::endl;
 }
 
-void	Commands::nickCommand( Client& client ){
+void	Commands::nickCommand( Client& client, struct ServerInfo& ){
 	//TODO:
 	// √ check if AUTHENTICATED
 	// √ check if already REGISTERED
@@ -77,7 +77,7 @@ void	Commands::nickCommand( Client& client ){
 	}
 }
 
-void	Commands::userCommand( Client& client ){
+void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	//TODO:
 	// √ check if AUTHENTICATED
 	// √ check if already REGISTERED
@@ -111,12 +111,12 @@ void	Commands::userCommand( Client& client ){
 	}
 }
 
-void	Commands::joinCommand( Client& client ){
+void	Commands::joinCommand( Client& client, struct ServerInfo& ){
 	std::cout << "entering the join command" << std::endl;
 	(void) client;
 }
 
-void	Commands::privmsgCommand( Client& client ){
+void	Commands::privmsgCommand( Client& client, struct ServerInfo& ){
 	//TODO:
 	// √ check if not REGISTERED
 	// * check msg destination

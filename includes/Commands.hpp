@@ -9,7 +9,7 @@
 
 class Commands {
 	private:
-	std::map<std::string, void (Commands::*) ( Client& )> commandsMap; //containing the command and pointer to its function
+	std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> commandsMap; //containing the command and pointer to its function
 
 	public:
 		Commands( void );
@@ -18,24 +18,24 @@ class Commands {
 		~Commands( void );
 
 		//::::::::Getters and Setters::::::
-		std::map<std::string, void (Commands::*) ( Client& )> getCommandMap( void ) const;
+		std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> getCommandMap( void ) const;
 		
 		
 		//::::::::::::Commands:::::::::::::
 			/* ~~~general commands ~~~ */
-		void	passCommand( Client& client );
-		void	nickCommand( Client& client );
-		void	userCommand( Client& client );
-		void	joinCommand( Client& client );
-		void	privmsgCommand( Client& client );
+		void	passCommand( Client&, struct ServerInfo&);
+		void	nickCommand( Client&, struct ServerInfo& );
+		void	userCommand( Client&, struct ServerInfo& );
+		void	joinCommand( Client&, struct ServerInfo& );
+		void	privmsgCommand( Client&, struct ServerInfo& );
 
 			/* ~~~channel commands ~~~ */
-		void	topicCommand( Client& client );
-		void	kickCommand( Client& client );
-		void	modeCommand( Client& client );
-		void	inviteCommand( Client& client );
+		void	topicCommand( Client&  );
+		void	kickCommand( Client&  );
+		void	modeCommand( Client&  );
+		void	inviteCommand( Client&  );
 };
 
-typedef  std::map<std::string, void (Commands::*) ( Client& )> t_commandsMap;
+typedef  std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> t_commandsMap;
 
 #endif
