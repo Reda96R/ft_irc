@@ -30,6 +30,12 @@ class Commands {
 		void	privmsgCommand( Client&, struct ServerInfo& );
 
 			/* ~~~channel commands ~~~ */
+		void	kickChannelCommand( Client&, struct ServerInfo& );
+		void	inviteChannelCommand( Client&, struct ServerInfo& );
+		void	topicChannelCommand( Client&, struct ServerInfo& );
+		void	modeChannelCommand( Client&, struct ServerInfo& );
+
+			/* ~~~channel commands ~~~ */
 		void	topicCommand( Client&  );
 		void	kickCommand( Client&  );
 		void	modeCommand( Client&  );

@@ -1,12 +1,11 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include <iostream>
-# include "Structs.hpp"
-# include <netinet/in.h>
-# include <vector>
-# include <string.h>
 # include <poll.h>
+# include <vector>
+# include <iostream>
+# include <netinet/in.h>
+# include "Structs.hpp"
 
 class Client {
 	private:

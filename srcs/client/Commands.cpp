@@ -2,11 +2,21 @@
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
+			/* ~~~general commands ~~~ */
 	this->commandsMap["PASS"] = &Commands::passCommand;
 	this->commandsMap["NICK"] = &Commands::nickCommand;
 	this->commandsMap["USER"] = &Commands::userCommand;
 	this->commandsMap["JOIN"] = &Commands::joinCommand;
 	this->commandsMap["PRIVMSG"] = &Commands::privmsgCommand;
+			/* ~~~channel commands ~~~ */
+	this->commandsMap["KICK"] = &Commands::kickChannelCommand;
+	this->commandsMap["INVITE"] = &Commands::inviteChannelCommand;
+	this->commandsMap["TOPIC"] = &Commands::topicChannelCommand;
+	this->commandsMap["MODE"] = &Commands::modeChannelCommand;
+}
+
+Commands::Commands( const Commands& src ){
+	*this = src;
 }
 
 //::::::::::::::::::Operators:::::::::::::::::::::::::
@@ -22,8 +32,8 @@ std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> Comman
 	return (this->commandsMap);
 }
 
-//::::::::::::::::::Methods:::::::::::::::::::::::::
-
+//::::::::::::::::::Commands:::::::::::::::::::::::::
+			/* ~~~general commands ~~~ */
 void	Commands::passCommand( Client& client, struct ServerInfo& ){
 	std::string pass = "pass"; // this will be replaced with server password
 
@@ -155,8 +165,42 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& ){
 	}
 }
 
-Commands::Commands( const Commands& src ){
-	*this = src;
+			/* ~~~channel commands ~~~ */
+void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
+	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
+		return ;
+	if (!client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		return ;
+	}
+
+}
+
+void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& ){
+	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
+		return ;
+	if (!client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		return ;
+	}
+}
+
+void	Commands::topicChannelCommand( Client& client, struct ServerInfo& ){
+	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
+		return ;
+	if (!client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		return ;
+	}
+}
+
+void	Commands::modeChannelCommand( Client& client, struct ServerInfo& ){
+	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
+		return ;
+	if (!client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		return ;
+	}
 }
 
 //::::::::::::::::::Deconstructor:::::::::::::::::::::::::

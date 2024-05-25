@@ -92,7 +92,7 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 
 	//TODO:
 	// check if there's more left
-
+	
 	// Command execution
 	void (Commands::*cmd)(Client&, struct ServerInfo&) = it->second;
 	(commands.*cmd)(client, serverInfo);
