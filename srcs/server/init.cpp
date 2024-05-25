@@ -9,7 +9,7 @@ bool initialize_server(int argc, char **argv, ServerInfo &server_info)
     }
 
     char *endptr;
-    long int port = strtol(argv[1], &endptr, 10);
+    long int port = std::strtol(argv[1], &endptr, 10);
     if (*endptr != '\0')
     {
         std::cerr << "Invalid argument" << std::endl;
@@ -24,6 +24,12 @@ bool initialize_server(int argc, char **argv, ServerInfo &server_info)
         std::cerr << "Socket creation failed\n";
         return false;
     }
+	int opt = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        std::cerr << "Error setting SO_REUSEADDR" << std::endl;
+        close(sockfd);
+        return 1;
+    }
     server_info.sockfd = sockfd;
 
     sockaddr_in serv_addr;
@@ -35,6 +41,7 @@ bool initialize_server(int argc, char **argv, ServerInfo &server_info)
 
     if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
+		perror("bind");
         std::cerr << "Binding failed\n";
         close(sockfd);
         return 1;
