@@ -1,4 +1,5 @@
 #include "../../includes/Commands.hpp"
+# include "../../includes/Server.hpp"
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -54,12 +55,12 @@ void	Commands::passCommand( Client& client, struct ServerInfo& ){
 		std::cerr << RED << client.getNickname() << " password not accepted" << RESET << std::endl;
 }
 
-void	Commands::nickCommand( Client& client, struct ServerInfo& ){
+void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 	//TODO:
 	// √ check if AUTHENTICATED
 	// √ check if already REGISTERED
 	// √ check if command's parameters exist
-	// ---> check if the provided nickname already exsits <---
+	// √ check if the provided nickname already exsits
 	// √ set the nick name
 
 	if (trailingCheck(client.getInput().arguments))
@@ -79,6 +80,12 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& ){
 	}
 	else if (client.getInput().arguments.size() < 2)
 	{
+		for (size_t i = 0; i < serverInfo.clients.size(); ++i){
+			if (client.getInput().arguments.at(0) == serverInfo.clients[i]->getNickname()){
+				std::cout << RED << "Mo" << RESET << std::endl;
+				return ;
+			}
+		}
 		client.setNickname(client.getInput().arguments[0]);
 		client.setStatus("nick", true);
 		if (client.getStatus().user)
