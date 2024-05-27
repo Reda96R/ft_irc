@@ -38,7 +38,7 @@ C_FILES 	= Parser Client Commands Helpers
 C_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)client/, $(C_FILES))))
 
 #::::::::::::::::CHNL:::::::::::::::#
-CH_FILES_M 	= #Channel
+CH_FILES_M 	= Channel
 
 CH_OBJS 	= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)channels/, $(CH_FILES_M))))
 

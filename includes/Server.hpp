@@ -12,6 +12,7 @@
 # include <poll.h>
 #include <vector>
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "macros.hpp"
 
 struct ServerInfo {
@@ -20,6 +21,8 @@ struct ServerInfo {
     std::string password;
     sockaddr_in serv_addr;
     std::vector<Client*> clients;
+    std::vector<Channel*> channels;
+
 };
 
 bool initialize_server(int argc, char** argv, ServerInfo &server_info);

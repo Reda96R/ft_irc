@@ -3,8 +3,10 @@
 
 # include <map>
 # include "Client.hpp"
+# include "Channel.hpp"
 # include "Helpers.hpp"
 # include "macros.hpp"
+# include "Server.hpp"
 
 
 class Commands {

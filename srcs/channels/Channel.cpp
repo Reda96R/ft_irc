@@ -59,6 +59,10 @@ std::string Channel::getChannelTopic() const {
     return this->channelTopic;
 }
 
+std::vector<Client> Channel::getChannelClients() const {
+    return this->channelClients;
+}
+
 // SETTERS
 
 void Channel::setChannelName(Client &me, std::string& channelName) {

@@ -125,8 +125,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& ){
 	std::cout << "entering the join command" << std::endl;
 	(void) client;
 }
-
-void	Commands::privmsgCommand( Client& client, struct ServerInfo& ){
+#include <vector>
+void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	//TODO:
 	// √ check if not REGISTERED
 	// * check msg destination
@@ -155,10 +155,17 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& ){
 
 		while (!privmsgInput.targets.empty()){
 			if (isValidChannelName(privmsgInput.targets.top())){
-				std::cout << GREEN << "valid channel" << RESET << std::endl;
+				std::cout << GREEN << "message to channel" << RESET << std::endl;
+				for (std::vector<Channel* >::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); ++it){
+					if ((*it)->getChannelName() == privmsgInput.targets.top()){
+						std::cout << CYAN << "Channel exists" << RESET << std::endl;
+						return ;
+					}
+				}
+				std::cout << CYAN << "Channel doesn't exist" << RESET << std::endl;
 			}
-			else{
-				std::cout << RED << "invalid channel" << RESET << std::endl;
+			else {
+				std::cout << RED << "message to client" << RESET << std::endl;
 			}
 			privmsgInput.targets.pop();
 		}
