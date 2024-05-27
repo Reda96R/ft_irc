@@ -119,7 +119,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		client.setStatus("user", true);
 		std::cout << GREEN << client.getNickname() << " username accepted" << RESET << std::endl;
 	}
-	else if (client.getInput().arguments.size() < 2)
+	else if (!client.getInput().arguments.empty())
 	{
 		client.setUsername(client.getInput().arguments[0]);
 		client.setStatus("user", true);
