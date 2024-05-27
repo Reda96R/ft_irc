@@ -129,11 +129,59 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	}
 }
 
-void	Commands::joinCommand( Client& client, struct ServerInfo& ){
-	std::cout << "entering the join command" << std::endl;
-	(void) client;
+// :::::::::::::::::::::::::::::::: JOIN COMMAND AND DEPENDECY FUNCTIONS ::::::::::::::::::::::::::::::::
+
+bool ft_checkIfChannelNameIsValid(std::string channelName){
+	if (channelName[0] != '#')
+		return false;
+	for (size_t i = 1; i < channelName.size(); i++){
+		if (!isalnum(channelName[i]) && channelName[i] != '_')
+			return false;
+	}
+	return true;
 }
-#include <vector>
+
+
+void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
+	// Check if the client is registered
+	if (!client.getStatus().registered){
+		std::cerr << RED << client.getNickname() << " not registered" << RESET << std::endl;
+		return ;
+	}
+	
+	// Check if the trailing is empty
+	if (trailingCheck(client.getInput().arguments)){
+		std::cerr << RED << "Trailing is empty" << RESET << std::endl;
+		return ;
+	}
+
+	// Check if the channel name is valid
+	std::string channelName = client.getInput().arguments[0];
+	if (ft_checkIfChannelNameIsValid(channelName) == false){
+		std::cerr << RED << "Invalid channel name" << RESET << std::endl;
+		return ;
+	}
+
+	// Check if the channel already exists
+	for (std::vector<Channel*>::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); it++){
+		if ((*it)->getChannelName() == channelName){
+			std::cerr << RED << "Channel already exists" << RESET << std::endl;
+			return ;
+		}
+	}
+
+	// Create the channel
+	Channel *channel = new Channel(channelName);
+	serverInfo.channels.push_back(channel);
+		// std::cout << GREEN << "Channel created" << RESET << std::endl;
+
+	// Add the client to the channel
+	channel->addClient(client);
+		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	//TODO:
 	// √ check if not REGISTERED
@@ -195,6 +243,8 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 		}
 	}
 }
+
+
 
 			/* ~~~channel commands ~~~ */
 void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){

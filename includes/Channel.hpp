@@ -43,9 +43,16 @@ class Channel {
         // SETTERS
         void setChannelName(Client &me, std::string& channelName);
         void setChannelTopic(Client &me, std::string& channelTopic);
+        void addClient(Client &me);
+        void removeClient(Client &me);
+        void addOperator(Client &me);
+        void removeOperator(Client &me);
+        void AddInvitedUser(Client &me);
+        void removeInvitedUser(Client &me);
+
 
         // METHODS
-        void inviteUser(Client &me, std::string& user);
+        void inviteUser(Client &me, struct ServerInfo& serverInfo, std::string& user);
         void kickUser(Client &me, std::string& user);
 
         void makeOperator(Client &me, std::string& user);

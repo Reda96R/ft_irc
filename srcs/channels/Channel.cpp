@@ -1,4 +1,6 @@
 # include "../../includes/Channel.hpp"
+# include "../../includes/Client.hpp"
+# include "../../includes/Server.hpp"
 
 // USELESS CANONICAL FORM
 Channel::Channel(void) {
@@ -79,17 +81,77 @@ void Channel::setChannelTopic(Client &me, std::string& channelTopic) {
         return ;
 }
 
+void Channel::addClient(Client &me) {
+    this->channelClients.push_back(me);
+}
+
+void Channel::removeClient(Client &me) {
+    this->channelClients.erase(std::remove(this->channelClients.begin(), this->channelClients.end(), me), this->channelClients.end());
+}
+
+void Channel::addOperator(Client &me) {
+    this->channelOperators.push_back(me);
+}
+
+void Channel::removeOperator(Client &me) {
+    this->channelOperators.erase(std::remove(this->channelOperators.begin(), this->channelOperators.end(), me), this->channelOperators.end());
+}
+
+void Channel::AddInvitedUser(Client &me) {
+    this->invitedUsers.push_back(me);
+}
+
+void Channel::removeInvitedUser(Client &me) {
+    this->invitedUsers.erase(std::remove(this->invitedUsers.begin(), this->invitedUsers.end(), me), this->invitedUsers.end());
+}
+
 // METHODS
 
-void Channel::inviteUser(Client &me, std::string& user) {
+void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string& user) {
     (void) me;
-    (void) user;
     // i need a the list of USERS in the server
+    if (this->channelInviteOnly == false)
+        return ;
+
+    // check if the client has the right to invite users
+    // if not return ;
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) == this->channelOperators.end())
+        return ;
+
+    // check if the string provided is a valid nickname
+    // if not return ;
+
+    Client *client_requested = nullptr;
+    for (std::vector<Client*>::iterator it = serverInfo.clients.begin(); it < serverInfo.clients.end(); it++) {
+        if ((*it)->getNickname() == user) {
+            client_requested = *it;
+            break ;
+        }
+    }
+
+    if (client_requested == nullptr)
+        return ;
+
+    // check if the user is already in the channel
+    if (std::find(this->channelClients.begin(), this->channelClients.end(), *client_requested) != this->channelClients.end())
+        return ;
+    
+    // check if the user is already invited
+    if (std::find(this->invitedUsers.begin(), this->invitedUsers.end(), *client_requested) != this->invitedUsers.end())
+        return ;
+
+    // add the user to the invited list
+    this->invitedUsers.push_back(*client_requested);
+    
+
+    // for each user in the server
     // iterates over them all, 
         // if any of the user nicknames matches the one provided above
             // send a private message in this format : "Invitation to ($server_name) from ($client_who_sent_request->name)"
         // else
             // return ;
+
+
 }
 
 
