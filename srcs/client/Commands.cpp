@@ -166,6 +166,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	for (std::vector<Channel*>::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); it++){
 		if ((*it)->getChannelName() == channelName){
 			std::cerr << RED << "Channel already exists" << RESET << std::endl;
+			if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end())
+				(*it)->addClient(client);
 			return ;
 		}
 	}
@@ -174,7 +176,6 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	Channel *channel = new Channel(channelName);
 	serverInfo.channels.push_back(channel);
 		// std::cout << GREEN << "Channel created" << RESET << std::endl;
-
 	// Add the client to the channel
 	channel->addClient(client);
 		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
@@ -219,9 +220,15 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				for (size_t i = 0; i < serverInfo.channels.size(); ++i){
 					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
 						std::cout << GREEN << "√ Channel exists √" << RESET << std::endl;
-						if (!messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
-							std::cout << RED << "No such channel" << RESET << std::endl;
+						// if (!messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
+						// 	std::cout << RED << "No such channel" << RESET << std::endl;
+						// }
+						
+						// iterates over clients and send message
+						if (!messageToChannel(*serverInfo.channels.at(i), client, privmsgInput.message)){
+								std::cout << RED << "No such channel" << RESET << std::endl;
 						}
+						
 					}
 				}
 			}

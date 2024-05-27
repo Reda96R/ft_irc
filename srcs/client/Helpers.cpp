@@ -47,7 +47,8 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
-		send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0);
+		if (target.getChannelClients()[i].getNickname()!= sender.getNickname())
+			send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0);
 	}
 	return (true);
 }
