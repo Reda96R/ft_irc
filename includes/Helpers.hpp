@@ -3,6 +3,7 @@
 
 # include <sstream>
 # include "Client.hpp"
+# include "Channel.hpp"
 # include "macros.hpp"
 
 //::::::::::::::::::Channels:::::::::::::::::::::::::
