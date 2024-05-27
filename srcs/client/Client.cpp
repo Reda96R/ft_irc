@@ -1,4 +1,5 @@
 #include "../../includes/Client.hpp"
+#include "../../includes/Server.hpp"
 #include "../../includes/macros.hpp"
 #include <netinet/in.h>
 #include <sstream>
@@ -64,7 +65,7 @@ int  Client::getPollFd( void ) const{
 }
 
 void	Client::setNickname( std::string& nickname ){
-	this ->clientNickname = nickname;
+	this->clientNickname = nickname;
 }
 
 void	Client::setUsername( std::string& username ){
@@ -137,38 +138,6 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
 		return true;
 }
 
-// bool	Client::clientRecv( char *recv){
-// 	bool				isInputValid = false;
-// 	std::string			tmp;
-// 	std::istringstream	iss(recv);
-
-// 	// while (getline(iss, tmp)){
-// 	// 	if (commandParser(tmp))
-// 	// 		isInputValid = true;
-// 	// 	else
-// 	// 		isInputValid = false;
-// 	// }
-// 	return (isInputValid);
-
-
-
-// void	Client::clientAdd( void ){
-// 	// TODO: check if the client is connected succesfully or not
-// 	Client		newClient;
-//     socklen_t	len = sizeof(newClient.getAddress());
-// 	struct sockaddr_in addr = newClient.getAddress();
-	
-// 	newClient.setSocket(accept(this->getSocket(), (struct sockaddr *)&addr, &len));
-// 	newClient.setAddress(addr);
-//     if (newClient.getSocket() == -1)
-//         std::cerr << RED << "Error: accept" << RESET << std::endl;
-//     else
-//         std::cout << GREEN << "New client connected" << RESET << std::endl;
-//     newClient.setPollFd(newClient.getSocket());
-
-//     // add the new client to the list of clients
-//     // struct needs to be defined in the header file
-// }
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 	// TODO: receive the message from the clients
 	int		ret;
@@ -191,8 +160,10 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
         buf[ret] = '\0';
         message = buf;
         std::cout << GREEN << "Message received: " << message << RESET << std::endl;
+
 		std::stringstream iss(message);
-		std::string tmp;
+		std::string		  tmp;
+
 		while (getline(iss, tmp))
 			commandParser(tmp, *this, serverInfo);
 	}

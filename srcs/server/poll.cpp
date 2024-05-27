@@ -9,13 +9,14 @@ void handlingPolling(ServerInfo& server_info, std::vector<pollfd>& fds, std::vec
         for (size_t i = 0; i < fds.size(); i++) {
             if (fds[i].revents & POLLIN) {
                  if (fds[i].fd == server_info.sockfd) {
-                    Client new_client;
-                    if (!new_client.clientAdd(server_info.sockfd, clients, fds)) {
+                    Client *new_client = new Client();
+                    if (!(*new_client).clientAdd(server_info.sockfd, clients, fds)) {
                         continue;
                     }
                 } else {
-                       if (!clients[i-1]->clientRecv(server_info)) {
+                       if (!clients[i - 1]->clientRecv(server_info)) {
                         fds.erase(fds.begin() + i);
+						delete clients[i - 1];
                         clients.erase(clients.begin() + i - 1);
                        }
                     

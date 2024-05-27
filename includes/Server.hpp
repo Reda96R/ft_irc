@@ -1,13 +1,9 @@
 #ifndef _SERVER_HPP_
 # define _SERVER_HPP_
 
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <sys/socket.h>
+# include <unistd.h>
+# include <sys/fcntl.h>
+# include <sys/socket.h>
 # include <netinet/in.h>
 # include <poll.h>
 #include <vector>

@@ -1,4 +1,5 @@
 #include "../../includes/Commands.hpp"
+# include "../../includes/Server.hpp"
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -34,52 +35,51 @@ std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> Comman
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
 			/* ~~~general commands ~~~ */
-void	Commands::passCommand( Client& client, struct ServerInfo& ){
-	std::string pass = "pass"; // this will be replaced with server password
-
+void	Commands::passCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments))
 		return ;
 
 	if (client.getStatus().authenticated)
-		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
+		std::cerr << RED << "Already registered" RESET << std::endl;
+
 	else if (client.getInput().arguments.empty())
-		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
-	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.at(0) == pass)
-	{
+		std::cerr << RED <<  "Need more parameters" RESET << std::endl;
+
+	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.at(0) == serverInfo.password){
 		client.setStatus("authenticated", true);
 		client.setStatus("pass", true);
-		std::cout << GREEN << client.getNickname() << " password accepted" << RESET << std::endl;
+		std::cout << GREEN << "Password accepted" << RESET << std::endl;
 	}
+
 	else
-		std::cerr << RED << client.getNickname() << " password not accepted" << RESET << std::endl;
+		std::cerr << RED << "Password not accepted" << RESET << std::endl;
 }
 
-void	Commands::nickCommand( Client& client, struct ServerInfo& ){
-	//TODO:
-	// √ check if AUTHENTICATED
-	// √ check if already REGISTERED
-	// √ check if command's parameters exist
-	// ---> check if the provided nickname already exsits <---
-	// √ set the nick name
-
+void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments))
 		return ;
 
 	if (!client.getStatus().authenticated){
-		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
+		std::cerr << RED << "Not authenticated" RESET << std::endl;
 		return ;
 	}
 	else if (client.getStatus().registered){
 		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
 		return ;
 	}
-	else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
+	else if (client.getInput().arguments.empty() || client.getInput().arguments.at(0).empty()){
 		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
 		return ;
 	}
 	else if (client.getInput().arguments.size() < 2)
 	{
-		client.setNickname(client.getInput().arguments[0]);
+		for (size_t i = 0; i < serverInfo.clients.size(); ++i){
+			if (client.getInput().arguments.at(0) == serverInfo.clients.at(i)->getNickname()){
+				std::cerr << RED << serverInfo.clients.at(i)->getNickname() << " nickname duplicated" << RESET << std::endl;
+				return ;
+			}
+		}
+		client.setNickname(client.getInput().arguments.at(0));
 		client.setStatus("nick", true);
 		if (client.getStatus().user)
 			client.setStatus("registered", true);
@@ -92,17 +92,25 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	// √ check if AUTHENTICATED
 	// √ check if already REGISTERED
 	// √ check if command's parameters exist if not set username to unknown
-	// √ set the username
+	// * parse the content
+	// * set the username
 
-	if (trailingCheck(client.getInput().arguments))
+	std::vector<std::string> arguments = client.getInput().arguments;
+	for (size_t i = 0; i < arguments.size() - 1; ++i){
+		if (arguments.at(i).at(0) == ':')
+			return ;
+	}
+
+	if (arguments.size() < 4){
+		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
 		return ;
+	}
 
 	if (!client.getStatus().authenticated){
 		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
 		return ;
 	}
-	else if (client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
+	else if (client.getStatus().registered){ std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
 		return ;
 	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
