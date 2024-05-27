@@ -147,8 +147,10 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 
 	s_prvMsgCommand			  privmsgInput;
 
-	if (!privmsgAnalyser( client.getInput().arguments, privmsgInput))
+	if (!privmsgAnalyser( client.getInput().arguments, privmsgInput)){
 		std::cout << RED << "failed" << RESET << std::endl;
+		return ;
+	}
 	else{
 		// std::cout << GREEN << "success" << RESET << std::endl;
 		//TODO:
@@ -162,18 +164,32 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 		//
 
 		while (!privmsgInput.targets.empty()){
+
+					/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
-				std::cout << GREEN << "message to channel" << RESET << std::endl;
-				for (std::vector<Channel* >::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); ++it){
-					if ((*it)->getChannelName() == privmsgInput.targets.top()){
-						std::cout << CYAN << "Channel exists" << RESET << std::endl;
+				std::cout << YELLOW << "~~~message to channel~~~" << RESET << std::endl;
+				for (size_t i = 0; i < serverInfo.channels.size(); ++i){
+					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
+						std::cout << GREEN << "√ Channel exists √" << RESET << std::endl;
 						return ;
 					}
 				}
-				std::cout << CYAN << "Channel doesn't exist" << RESET << std::endl;
+				std::cout << RED << "X Channel doesn't exist X" << RESET << std::endl;
 			}
+
+					/* ~~~message to client~~~ */
 			else {
-				std::cout << RED << "message to client" << RESET << std::endl;
+				std::cout << YELLOW << "~~~message to clients~~~" << RESET << std::endl;
+				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
+					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
+						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
+							std::cout << GREEN << "::: message sent :::" << RESET << std::endl;
+						}
+						std::cout << GREEN << "√ Client exists √" << RESET << std::endl;
+						return ;
+					}
+				}
+				std::cout << RED << "X Client doesn't exist X" << RESET << std::endl;
 			}
 			privmsgInput.targets.pop();
 		}

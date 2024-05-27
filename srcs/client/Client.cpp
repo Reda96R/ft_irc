@@ -144,7 +144,6 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 	std::cout << "receiving...\n";
     char	buf[1024];
     std::string		message;
-	std::cout << "Socket: " << this->getSocket() << std::endl;
 
     ret = recv(this->getSocket(), buf, sizeof(buf), 0);
 	if (ret == -1){

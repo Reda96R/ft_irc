@@ -2,7 +2,6 @@
 
 //::::::::::::::::::Channels:::::::::::::::::::::::::
 bool	isValidChannelName( std::string& channelName ){
-	std::cout << CYAN << channelName << RESET << std::endl;
 	if (channelName.find_first_of("\a:, ") != std::string::npos || channelName.length() > 200)
 		return (false);
 	if (!channelName.empty() && channelName.at(0) != '#' && channelName.at(0) != '&')
@@ -35,6 +34,14 @@ bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privm
 	return (true);
 }
 
+bool	messageToClient( Client& target, Client& sender, std::string message){
+	(void) sender;
+	if (message.at(message.size() - 1) != '\n')
+		message += '\n';
+	send(target.getPollFd(), message.c_str(), message.length(), 0);
+	return (true);
+}
+
 bool	trailingCheck( std::vector<std::string> arguments ){
 	for (size_t i = 0; i < arguments.size(); ++i){
 		if (arguments[i].at(0) == ':')
@@ -42,12 +49,6 @@ bool	trailingCheck( std::vector<std::string> arguments ){
 	}
 	return (false);
 }
-
-
-#include <iostream>
-#include <algorithm>
-#include <string>
-#include <iterator>
 
 void compareStrings(const std::string& str1, const std::string& str2) {
     std::pair<std::string::const_iterator, std::string::const_iterator> result = std::mismatch(str1.begin(), str1.end(), str2.begin());
