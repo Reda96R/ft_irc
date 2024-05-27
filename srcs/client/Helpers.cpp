@@ -42,6 +42,15 @@ bool	messageToClient( Client& target, Client& sender, std::string message){
 	return (true);
 }
 
+bool	messageToChannel( Channel& target, Client& sender, std::string message){
+	(void) sender;
+	if (message.at(message.size() - 1) != '\n')
+		message += '\n';
+	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
+		send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0);
+	}
+	return (true);
+}
 bool	trailingCheck( std::vector<std::string> arguments ){
 	for (size_t i = 0; i < arguments.size(); ++i){
 		if (arguments[i].at(0) == ':')

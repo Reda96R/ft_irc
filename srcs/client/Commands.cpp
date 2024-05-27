@@ -171,10 +171,11 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				for (size_t i = 0; i < serverInfo.channels.size(); ++i){
 					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
 						std::cout << GREEN << "√ Channel exists √" << RESET << std::endl;
-						return ;
+						if (!messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
+							std::cout << RED << "No such channel" << RESET << std::endl;
+						}
 					}
 				}
-				std::cout << RED << "X Channel doesn't exist X" << RESET << std::endl;
 			}
 
 					/* ~~~message to client~~~ */
@@ -182,14 +183,12 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				std::cout << YELLOW << "~~~message to clients~~~" << RESET << std::endl;
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
-						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
-							std::cout << GREEN << "::: message sent :::" << RESET << std::endl;
-						}
 						std::cout << GREEN << "√ Client exists √" << RESET << std::endl;
-						return ;
+						if (!messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
+							std::cout << RED << "No such nick" << RESET << std::endl;
+						}
 					}
 				}
-				std::cout << RED << "X Client doesn't exist X" << RESET << std::endl;
 			}
 			privmsgInput.targets.pop();
 		}
