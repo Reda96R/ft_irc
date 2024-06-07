@@ -121,7 +121,7 @@ void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string&
     // check if the string provided is a valid nickname
     // if not return ;
 
-    Client *client_requested = nullptr;
+    Client *client_requested = NULL;
     for (std::vector<Client*>::iterator it = serverInfo.clients.begin(); it < serverInfo.clients.end(); it++) {
         if ((*it)->getNickname() == user) {
             client_requested = *it;
@@ -129,7 +129,7 @@ void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string&
         }
     }
 
-    if (client_requested == nullptr)
+    if (client_requested == NULL)
         return ;
 
     // check if the user is already in the channel

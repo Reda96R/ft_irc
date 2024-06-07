@@ -2,6 +2,8 @@
 # define _SERVER_HPP_
 
 # include <unistd.h>
+# include <cstring>
+# include <cstdio>
 # include <sys/fcntl.h>
 # include <sys/socket.h>
 # include <netinet/in.h>
