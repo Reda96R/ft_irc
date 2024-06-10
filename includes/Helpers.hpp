@@ -16,6 +16,8 @@ bool		messageToChannel( Channel& , Client& , std::string );
 
 bool		trailingCheck( std::vector<std::string> arguments );
 
-void		compareStrings(const std::string& str1, const std::string& str2);
+void		compareStrings( const std::string& str1, const std::string& str2 );
+
+std::string intToString( int );
 
 #endif

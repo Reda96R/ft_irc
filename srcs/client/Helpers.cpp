@@ -10,6 +10,8 @@ bool	isValidChannelName( std::string& channelName ){
 }
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
+//TODO
+//replace errors with their numerical values
 bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privmsgInput){
 	if (arguments.empty() || arguments.size() < 2){
 		if (arguments.front().at(0) == ':')
@@ -38,7 +40,9 @@ bool	messageToClient( Client& target, Client& sender, std::string message){
 	(void) sender;
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
-	send(target.getPollFd(), message.c_str(), message.length(), 0);
+
+	if (send(target.getPollFd(), message.c_str(), message.length(), 0) == -1)
+		return (false);
 	return (true);
 }
 
@@ -47,10 +51,12 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
-		if (target.getChannelClients()[i].getNickname()!= sender.getNickname())
+		if (target.getChannelClients()[i].getNickname() != sender.getNickname()){
 			send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0);
+			return (true);
+		}
 	}
-	return (true);
+	return (false);
 }
 bool	trailingCheck( std::vector<std::string> arguments ){
 	for (size_t i = 0; i < arguments.size(); ++i){
@@ -60,6 +66,7 @@ bool	trailingCheck( std::vector<std::string> arguments ){
 	return (false);
 }
 
+//::::::::::::::::::General:::::::::::::::::::::::::
 void compareStrings(const std::string& str1, const std::string& str2) {
     std::pair<std::string::const_iterator, std::string::const_iterator> result = std::mismatch(str1.begin(), str1.end(), str2.begin());
 
@@ -72,4 +79,11 @@ void compareStrings(const std::string& str1, const std::string& str2) {
         std::cout << "String 2 has: " << *result.second << std::endl;
     }
 }
+
+std::string intToString(int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
 

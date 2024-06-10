@@ -1,5 +1,6 @@
-#include "../../includes/Commands.hpp"
+# include "../../includes/Commands.hpp"
 # include "../../includes/Server.hpp"
+# include "../../includes/IrcErrors.hpp"
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -40,19 +41,19 @@ void	Commands::passCommand( Client& client, struct ServerInfo& serverInfo ){
 		return ;
 
 	if (client.getStatus().authenticated)
-		std::cerr << RED << "Already registered" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
 
 	else if (client.getInput().arguments.empty())
-		std::cerr << RED <<  "Need more parameters" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "PASS"));
 
 	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.at(0) == serverInfo.password){
 		client.setStatus("authenticated", true);
 		client.setStatus("pass", true);
-		std::cout << GREEN << "Password accepted" << RESET << std::endl;
+		messageToClient(client, client, "Password accepted");
 	}
 
 	else
-		std::cerr << RED << "Password not accepted" << RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_PASSWDMISMATCH, client.getNickname()));
 }
 
 void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
@@ -60,22 +61,22 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		return ;
 
 	if (!client.getStatus().authenticated){
-		std::cerr << RED << "Not authenticated" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 	else if (client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
 		return ;
 	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments.at(0).empty()){
-		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "NICK"));
 		return ;
 	}
 	else if (client.getInput().arguments.size() < 2)
 	{
 		for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 			if (client.getInput().arguments.at(0) == serverInfo.clients.at(i)->getNickname()){
-				std::cerr << RED << serverInfo.clients.at(i)->getNickname() << " nickname duplicated" << RESET << std::endl;
+				messageToClient(client, client, replyGenerator(ERR_NICKNAMEINUSE, client.getNickname()));
 				return ;
 			}
 		}
@@ -83,7 +84,7 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		client.setStatus("nick", true);
 		if (client.getStatus().user)
 			client.setStatus("registered", true);
-		std::cout << GREEN << client.getNickname() << " nickname accepted" << RESET << std::endl;
+		messageToClient(client, client, "Nickname accepted");
 	}
 }
 
@@ -102,22 +103,23 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	}
 
 	if (arguments.size() < 4){
-		std::cerr << RED << client.getNickname() << " need more parameters" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
 		return ;
 	}
 
 	if (!client.getStatus().authenticated){
-		std::cerr << RED << client.getNickname() << " not authenticated" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
-	else if (client.getStatus().registered){ std::cerr << RED << client.getNickname() << " already registered" RESET << std::endl;
+	else if (client.getStatus().registered){
+		messageToClient(client, client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
 		return ;
 	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
 		std::string	  tmp = "unknown";
 		client.setUsername(tmp);
 		client.setStatus("user", true);
-		std::cout << GREEN << client.getNickname() << " username accepted" << RESET << std::endl;
+		messageToClient(client, client, "user accepted");
 	}
 	else if (!client.getInput().arguments.empty())
 	{
@@ -125,40 +127,42 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		client.setStatus("user", true);
 		if (client.getStatus().nick)
 			client.setStatus("registered", true);
-		std::cout << GREEN << client.getNickname() << " userame accepted" << RESET << std::endl;
+		messageToClient(client, client, "user accepted");
 	}
 }
 
 // :::::::::::::::::::::::::::::::: JOIN COMMAND AND DEPENDECY FUNCTIONS ::::::::::::::::::::::::::::::::
-
-bool ft_checkIfChannelNameIsValid(std::string channelName){
-	if (channelName[0] != '#')
-		return false;
-	for (size_t i = 1; i < channelName.size(); i++){
-		if (!isalnum(channelName[i]) && channelName[i] != '_')
-			return false;
-	}
-	return true;
-}
+//NOTE: there's isValidChannelName() in helpers.cpp
+// bool ft_checkIfChannelNameIsValid(std::string channelName){
+// 	if (channelName[0] != '#')
+// 		return false;
+// 	for (size_t i = 1; i < channelName.size(); i++){
+// 		if (!isalnum(channelName[i]) && channelName[i] != '_')
+// 			return false;
+// 	}
+// 	return true;
+// }
 
 
 void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the client is registered
 	if (!client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " not registered" << RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 	
 	// Check if the trailing is empty
+	// TODO: WTF is this?
 	if (trailingCheck(client.getInput().arguments)){
 		std::cerr << RED << "Trailing is empty" << RESET << std::endl;
+		// messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 
 	// Check if the channel name is valid
 	std::string channelName = client.getInput().arguments[0];
-	if (ft_checkIfChannelNameIsValid(channelName) == false){
-		std::cerr << RED << "Invalid channel name" << RESET << std::endl;
+	if (!isValidChannelName(channelName)){
+		messageToClient(client, client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), channelName));
 		return ;
 	}
 
@@ -190,8 +194,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	// * check text msg validity
 
 	if (!client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
-		return ;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 	}
 
 	s_prvMsgCommand			  privmsgInput;
@@ -226,7 +229,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 						
 						// iterates over clients and send message
 						if (!messageToChannel(*serverInfo.channels.at(i), client, privmsgInput.message)){
-								std::cout << RED << "No such channel" << RESET << std::endl;
+								messageToClient(client, client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top()));
 						}
 						
 					}
@@ -236,14 +239,17 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 					/* ~~~message to client~~~ */
 			else {
 				std::cout << YELLOW << "~~~message to clients~~~" << RESET << std::endl;
+				bool  n = false;
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
-						std::cout << GREEN << "√ Client exists √" << RESET << std::endl;
-						if (!messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
-							std::cout << RED << "No such nick" << RESET << std::endl;
-						}
+						//√ Client exists √
+						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message))
+							n = true;
 					}
 				}
+				//X Client doesn't exist X
+				if (!n)
+					messageToClient(client, client, replyGenerator(ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top()));
 			}
 			privmsgInput.targets.pop();
 		}
@@ -257,7 +263,7 @@ void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 
@@ -267,7 +273,7 @@ void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 }
@@ -276,7 +282,7 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 }
@@ -285,7 +291,7 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		std::cerr << RED << client.getNickname() << " not registered" RESET << std::endl;
+		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 }
