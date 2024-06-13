@@ -141,7 +141,6 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 	// TODO: receive the message from the clients
 	int		ret;
-	std::cout << "receiving...\n";
     char	buf[1024];
     std::string		message;
 
@@ -158,7 +157,6 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
     {
         buf[ret] = '\0';
         message = buf;
-        std::cout << GREEN << "Message received: " << message << RESET << std::endl;
 
 		std::stringstream iss(message);
 		std::string		  tmp;

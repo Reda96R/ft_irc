@@ -58,14 +58,14 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 
 	//Broadcasting the message
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
-		if (target.getChannelClients()[i].getNickname() != sender.getNickname()){
-			if (!messageToClient(target.getChannelClients()[i], target.getChannelClients()[i], message)){
-			// if (send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0) == -1){
+		if (target.getChannelClients()[i]->getNickname() != sender.getNickname()){
+			if (!messageToClient(*target.getChannelClients()[i], *target.getChannelClients()[i], message)){
 				std::cout << RED << "send failure" << RESET << std::endl;
 				return (false);
 			}
 		}
 	}
+
 	return (true);
 }
 bool	trailingCheck( std::vector<std::string> arguments ){

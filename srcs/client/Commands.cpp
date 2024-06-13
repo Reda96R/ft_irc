@@ -82,9 +82,12 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		}
 		client.setNickname(client.getInput().arguments.at(0));
 		client.setStatus("nick", true);
-		if (client.getStatus().user)
+		if (client.getStatus().user){
 			client.setStatus("registered", true);
+		}
 		messageToClient(client, client, "Nickname accepted");
+		if (client.getStatus().registered)
+			messageToClient(client, client, replyGenerator(RPL_WELCOME, client.getNickname()));
 	}
 }
 
@@ -119,15 +122,18 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		std::string	  tmp = "unknown";
 		client.setUsername(tmp);
 		client.setStatus("user", true);
-		messageToClient(client, client, "user accepted");
+		messageToClient(client, client, "User accepted");
 	}
 	else if (!client.getInput().arguments.empty())
 	{
 		client.setUsername(client.getInput().arguments[0]);
 		client.setStatus("user", true);
-		if (client.getStatus().nick)
+		if (client.getStatus().nick){
 			client.setStatus("registered", true);
-		messageToClient(client, client, "user accepted");
+		}
+		messageToClient(client, client, "User accepted");
+		if (client.getStatus().registered)
+			messageToClient(client, client, replyGenerator(RPL_WELCOME, client.getNickname()));
 	}
 }
 
@@ -195,11 +201,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	//TODO:
 	// √ check if not REGISTERED
-	// * check msg destination
+	// √ check msg destination
 	// * check text msg validity
-
-	for (size_t i = 0; i < client.channels.size(); ++i)
-		std::cout << CYAN << client.channels[i] << RESET << std::endl;
 
 	if (!client.getStatus().registered){
 		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
@@ -212,10 +215,10 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	else{
 		//TODO:
 		//	√ check if the target is user or a channel:
-		//	  * channel:
-		//		* check if the user is a member of the channel (client class will contain
+		//	  √ channel:
+		//		√ check if the user is a member of the channel (client class will contain
 		//		data structure that contains the names of the channels that the client is part of)
-		//		 -->check if the channel exists (to send nosuchchannel or cannotsendtochan)
+		//		√ check if the channel exists (to send nosuchchannel or cannotsendtochan)
 		//	  √ user:
 		//		√ search for the user if found sent the message if not return nosuchnick
 		//
@@ -224,7 +227,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 
 			/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
-				std::cout << YELLOW << "~~~message to channel~~~" << RESET << std::endl;
 				bool	n = false;
 				for (size_t i = 0; i < serverInfo.channels.size(); ++i){
 					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
@@ -245,7 +247,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 
 			/* ~~~message to client~~~ */
 			else {
-				std::cout << YELLOW << "~~~message to clients~~~" << RESET << std::endl;
 				bool	n = false;
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){

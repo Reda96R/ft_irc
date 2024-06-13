@@ -16,7 +16,7 @@ class Channel {
         ssize_t userLimit;
 
         // CLIENTS IN CHANNEL
-        std::vector<Client> channelClients;
+        std::vector<Client*> channelClients;
         std::vector<Client> channelOperators;
         std::vector<Client> invitedUsers;
 
@@ -38,7 +38,7 @@ class Channel {
         // GETTERS
         std::string getChannelName() const;
         std::string getChannelTopic() const;
-        std::vector<Client> getChannelClients() const;
+        std::vector<Client*> getChannelClients() const;
 
         // SETTERS
         void setChannelName(Client &me, std::string& channelName);

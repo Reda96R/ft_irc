@@ -1,6 +1,7 @@
 # include "../../includes/Client.hpp"
 # include "../../includes/macros.hpp"
 # include "../../includes/Commands.hpp"
+# include "../../includes/IrcErrors.hpp"
 
 //TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
@@ -51,11 +52,8 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 	}
 
 	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
-	if (it != commandsMap.end()){
-		std::cout << GREY << " ̴ ̴ ̴ Command exists  ̴ ̴ ̴" << RESET << std::endl;
-	}
-	else{
-		std::cout << GREY << " ̴ ̴ ̴ Command doesn't exists  ̴ ̴ ̴" << RESET << std::endl;
+	if (it == commandsMap.end()){
+		messageToClient(client, client, replyGenerator(ERR_UNKNOWNCOMMAND, client.getNickname()));
 		return (false);
 	}
 	position = input.find_first_not_of(' ', commandEnd);
