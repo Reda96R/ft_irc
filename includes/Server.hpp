@@ -8,10 +8,10 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <poll.h>
-#include <vector>
-#include "Client.hpp"
-#include "Channel.hpp"
-#include "macros.hpp"
+# include <vector>
+# include "Client.hpp"
+# include "Channel.hpp"
+# include "macros.hpp"
 
 struct ServerInfo {
     int sockfd;

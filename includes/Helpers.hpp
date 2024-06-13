@@ -10,7 +10,7 @@
 bool		isValidChannelName( std::string& );
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
-bool		privmsgAnalyser(std::vector<std::string>, s_prvMsgCommand& );
+bool		privmsgAnalyser(std::vector<std::string>, s_prvMsgCommand& , Client& );
 bool		messageToClient( Client& , Client& , std::string );
 bool		messageToChannel( Channel& , Client& , std::string );
 

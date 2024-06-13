@@ -1,9 +1,9 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
+# include <iostream>
 # include <poll.h>
 # include <vector>
-# include <iostream>
 # include <netinet/in.h>
 # include "Structs.hpp"
 
@@ -20,11 +20,14 @@ class Client {
 		int						clientPollFd;
 		struct sockaddr_in		clientAddress;
 
+
 	public:
 		Client( void );
 		Client( const Client& );
 		Client& operator=( const Client& );
 		~Client( void );
+
+		std::vector<std::string> channels;
 
 		//Comparison operator
 		bool operator==( const Client& ) const;

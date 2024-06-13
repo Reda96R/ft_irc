@@ -151,7 +151,7 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 		return (false);
 	}
 	else if (ret == 0){
-        std::cerr << RED << "Error: client disconnected" << RESET << std::endl;
+        std::cerr << RED << "Client disconnected" << RESET << std::endl;
 		return (false);
 	}
 	else

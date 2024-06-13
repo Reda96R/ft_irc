@@ -1,4 +1,5 @@
 #include "../../includes/Helpers.hpp"
+#include "../../includes/IrcErrors.hpp"
 
 //::::::::::::::::::Channels:::::::::::::::::::::::::
 bool	isValidChannelName( std::string& channelName ){
@@ -12,13 +13,11 @@ bool	isValidChannelName( std::string& channelName ){
 //::::::::::::::::::Commands:::::::::::::::::::::::::
 //TODO
 //replace errors with their numerical values
-bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privmsgInput){
+bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privmsgInput, Client& client ){
 	if (arguments.empty() || arguments.size() < 2){
-		if (arguments.front().at(0) == ':')
-			std::cout << RED << "No Target" << RESET << std::endl;
-		else
-			std::cout << RED << "Nothing to be sent" << RESET << std::endl;
-		return false;
+		if (arguments.size() < 2)
+			messageToClient(client, client, replyGenerator(ERR_NOTEXTTOSEND, client.getNickname()));
+		return (false);
 	}
 
 	//Target parsing
@@ -47,16 +46,27 @@ bool	messageToClient( Client& target, Client& sender, std::string message){
 }
 
 bool	messageToChannel( Channel& target, Client& sender, std::string message){
-	(void) sender;
+	//Checking if the user is part of the channel
+	std::vector<std::string>::iterator it = std::find(sender.channels.begin(), sender.channels.end(), target.getChannelName());
+	if (it == sender.channels.end()){
+		messageToClient(sender, sender, replyGenerator(ERR_NOTONCHANNEL, sender.getNickname(), target.getChannelName()));
+		return (false);
+	}
+
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
+
+	//Broadcasting the message
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
 		if (target.getChannelClients()[i].getNickname() != sender.getNickname()){
-			send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0);
-			return (true);
+			if (!messageToClient(target.getChannelClients()[i], target.getChannelClients()[i], message)){
+			// if (send(target.getChannelClients()[i].getPollFd(), message.c_str(), message.length(), 0) == -1){
+				std::cout << RED << "send failure" << RESET << std::endl;
+				return (false);
+			}
 		}
 	}
-	return (false);
+	return (true);
 }
 bool	trailingCheck( std::vector<std::string> arguments ){
 	for (size_t i = 0; i < arguments.size(); ++i){

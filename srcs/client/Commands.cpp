@@ -169,9 +169,13 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the channel already exists
 	for (std::vector<Channel*>::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); it++){
 		if ((*it)->getChannelName() == channelName){
-			std::cerr << RED << "Channel already exists" << RESET << std::endl;
-			if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end())
+
+
+			if (std::find(client.channels.begin(), client.channels.end(), (*it)->getChannelName()) == client.channels.end()){
+			// if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end()){
 				(*it)->addClient(client);
+				client.channels.push_back((*it)->getChannelName());
+			}
 			return ;
 		}
 	}
@@ -182,6 +186,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 		// std::cout << GREEN << "Channel created" << RESET << std::endl;
 	// Add the client to the channel
 	channel->addClient(client);
+	client.channels.push_back(channelName);
 		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
 }
 
@@ -193,65 +198,73 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	// * check msg destination
 	// * check text msg validity
 
+	for (size_t i = 0; i < client.channels.size(); ++i)
+		std::cout << CYAN << client.channels[i] << RESET << std::endl;
+
 	if (!client.getStatus().registered){
 		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 	}
 
 	s_prvMsgCommand			  privmsgInput;
 
-	if (!privmsgAnalyser( client.getInput().arguments, privmsgInput)){
-		std::cout << RED << "failed" << RESET << std::endl;
+	if (!privmsgAnalyser(client.getInput().arguments, privmsgInput, client))
 		return ;
-	}
 	else{
-		// std::cout << GREEN << "success" << RESET << std::endl;
 		//TODO:
-		//	- check if the target is user or a channel:
+		//	√ check if the target is user or a channel:
 		//	  * channel:
 		//		* check if the user is a member of the channel (client class will contain
 		//		data structure that contains the names of the channels that the client is part of)
 		//		 -->check if the channel exists (to send nosuchchannel or cannotsendtochan)
-		//	  * user:
-		//		* search for the user if found sent the message if not return nosuchnick
+		//	  √ user:
+		//		√ search for the user if found sent the message if not return nosuchnick
 		//
 
 		while (!privmsgInput.targets.empty()){
 
-					/* ~~~message to channel~~~ */
+			/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
 				std::cout << YELLOW << "~~~message to channel~~~" << RESET << std::endl;
+				bool	n = false;
 				for (size_t i = 0; i < serverInfo.channels.size(); ++i){
 					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
-						std::cout << GREEN << "√ Channel exists √" << RESET << std::endl;
-						// if (!messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
-						// 	std::cout << RED << "No such channel" << RESET << std::endl;
-						// }
-						
-						// iterates over clients and send message
-						if (!messageToChannel(*serverInfo.channels.at(i), client, privmsgInput.message)){
-								messageToClient(client, client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top()));
+						//√ Channel exists √
+						if (messageToChannel(*serverInfo.channels.at(i), client, privmsgInput.message)){
+							privmsgInput.targets.pop();
+							n = true;
+							break ;
 						}
-						
+						// else
+							//display send() error if (!messageToChannel)
 					}
 				}
+				//X Channel doesn't exist X
+				if (!n)
+					messageToClient(client, client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top()));
 			}
 
-					/* ~~~message to client~~~ */
+			/* ~~~message to client~~~ */
 			else {
 				std::cout << YELLOW << "~~~message to clients~~~" << RESET << std::endl;
-				bool  n = false;
+				bool	n = false;
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
 						//√ Client exists √
-						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message))
+						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
+							privmsgInput.targets.pop();
 							n = true;
+							break ;
+						}
+						// else
+							//display send() error if (!messageToClient)
 					}
 				}
 				//X Client doesn't exist X
 				if (!n)
 					messageToClient(client, client, replyGenerator(ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top()));
 			}
-			privmsgInput.targets.pop();
+			if (!privmsgInput.targets.empty())
+				privmsgInput.targets.pop();
 		}
 	}
 }

@@ -40,7 +40,6 @@ struct ErrorMessagesInitializer {
 } errorMessagesInitializer;
 
 
-
 std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target){
 	return (":ircserv " + intToString(errorCode) + " " + sender + " "
 			+ target + " :" + errorMessages.at(errorCode) + " \r\n"); 
