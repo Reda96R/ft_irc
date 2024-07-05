@@ -2,6 +2,7 @@
 #include "../../includes/Server.hpp"
 #include "../../includes/macros.hpp"
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sstream>
 #include <stdio.h>
 
@@ -40,6 +41,10 @@ bool	Client::getType( void ) const{
 	return (this->clientIsOperator);
 }
 
+std::string	  Client::getIpAddress( void ) const{
+	return (this->clientIpAddress);
+}
+
 std::string	  Client::getUsername( void ) const{
 	return (this->clientUsername);
 }
@@ -70,6 +75,10 @@ void	Client::setNickname( std::string& nickname ){
 
 void	Client::setUsername( std::string& username ){
 	this->clientUsername = username;
+}
+
+void	Client::setIpAddress( std::string& ipAddress ){
+	this->clientUsername = ipAddress;
 }
 
 void	Client::setType( bool type ){
@@ -109,7 +118,6 @@ void	Client::setInput( std::string target, std::string& value ){
 	else if (target == "arguments")
 		this->clientInput.arguments.push_back(value);
 }
-
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<pollfd>& fds){
         sockaddr_in client_addr;
@@ -125,6 +133,11 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
 
         this->setSocket(client_sockfd);
         this->setAddress(client_addr);
+
+		//Ip address of the client 
+		std::string	  ipAddress = inet_ntoa(client_addr.sin_addr);
+		this->setIpAddress(ipAddress);
+
         this->setPollFd(client_sockfd);
 
 		struct pollfd pfd;

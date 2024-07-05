@@ -80,6 +80,8 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 				return ;
 			}
 		}
+		if (client.getInput().arguments.at(0).length() > 9)
+			return ;
 		client.setNickname(client.getInput().arguments.at(0));
 		client.setStatus("nick", true);
 		if (client.getStatus().user){
@@ -132,8 +134,10 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 			client.setStatus("registered", true);
 		}
 		messageToClient(client, client, "User accepted");
-		if (client.getStatus().registered)
+		if (client.getStatus().registered){
 			messageToClient(client, client, replyGenerator(RPL_WELCOME, client.getNickname()));
+			// std::cout << CYAN << "IP--> " << client.getIpAddress() << RESET << std::endl;
+		}
 	}
 }
 
@@ -251,6 +255,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
 						//√ Client exists √
+						// std::cout << YELLOW << client.getIpAddress() <<  RESET << std::endl;
 						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
 							privmsgInput.targets.pop();
 							n = true;

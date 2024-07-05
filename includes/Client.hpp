@@ -11,6 +11,7 @@ class Client {
 	private:
 		std::string				clientNickname;
 		std::string				clientUsername;
+		std::string				clientIpAddress;
 		bool					clientIsOperator; // true if the client is an operator and not a regular user
 
 		struct s_status			clientStatus;
@@ -35,11 +36,13 @@ class Client {
 		//::::::::Getters and Setters:::::::::::::::
 		void					setNickname( std::string& );
 		void					setUsername( std::string& );
+		void					setIpAddress( std::string& );
 		void					setType( bool );
 		void					setStatus( std::string, bool );
 
 		struct s_status			getStatus( void ) const;
 		bool					getType( void ) const;
+		std::string				getIpAddress( void ) const;
 		std::string				getUsername( void ) const;
 		std::string				getNickname( void ) const;
 
