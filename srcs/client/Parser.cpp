@@ -53,7 +53,7 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 
 	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
 	if (it == commandsMap.end()){
-		messageToClient(client, client, replyGenerator(ERR_UNKNOWNCOMMAND, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_UNKNOWNCOMMAND, client.getNickname()));
 		return (false);
 	}
 	position = input.find_first_not_of(' ', commandEnd);

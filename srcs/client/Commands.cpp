@@ -41,19 +41,19 @@ void	Commands::passCommand( Client& client, struct ServerInfo& serverInfo ){
 		return ;
 
 	if (client.getStatus().authenticated)
-		messageToClient(client, client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
 
 	else if (client.getInput().arguments.empty())
-		messageToClient(client, client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "PASS"));
+		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "PASS"));
 
 	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.at(0) == serverInfo.password){
 		client.setStatus("authenticated", true);
 		client.setStatus("pass", true);
-		messageToClient(client, client, "Password accepted");
+		messageToClient(client, "Password accepted");
 	}
 
 	else
-		messageToClient(client, client, replyGenerator(ERR_PASSWDMISMATCH, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_PASSWDMISMATCH, client.getNickname()));
 }
 
 void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
@@ -61,22 +61,22 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		return ;
 
 	if (!client.getStatus().authenticated){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 	else if (client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
 		return ;
 	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments.at(0).empty()){
-		messageToClient(client, client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "NICK"));
+		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "NICK"));
 		return ;
 	}
 	else if (client.getInput().arguments.size() < 2)
 	{
 		for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 			if (client.getInput().arguments.at(0) == serverInfo.clients.at(i)->getNickname()){
-				messageToClient(client, client, replyGenerator(ERR_NICKNAMEINUSE, client.getNickname()));
+				messageToClient(client, replyGenerator(ERR_NICKNAMEINUSE, client.getNickname()));
 				return ;
 			}
 		}
@@ -87,9 +87,9 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		if (client.getStatus().user){
 			client.setStatus("registered", true);
 		}
-		messageToClient(client, client, "Nickname accepted");
+		messageToClient(client, "Nickname accepted");
 		if (client.getStatus().registered)
-			messageToClient(client, client, replyGenerator(RPL_WELCOME, client.getNickname()));
+			messageToClient(client, replyGenerator(RPL_WELCOME, client.getNickname()));
 	}
 }
 
@@ -108,23 +108,23 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	}
 
 	if (arguments.size() < 4){
-		messageToClient(client, client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
+		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
 		return ;
 	}
 
 	if (!client.getStatus().authenticated){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 	else if (client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
 		return ;
 	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
 		std::string	  tmp = "unknown";
 		client.setUsername(tmp);
 		client.setStatus("user", true);
-		messageToClient(client, client, "User accepted");
+		messageToClient(client, "User accepted");
 	}
 	else if (!client.getInput().arguments.empty())
 	{
@@ -133,9 +133,9 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		if (client.getStatus().nick){
 			client.setStatus("registered", true);
 		}
-		messageToClient(client, client, "User accepted");
+		messageToClient(client, "User accepted");
 		if (client.getStatus().registered){
-			messageToClient(client, client, replyGenerator(RPL_WELCOME, client.getNickname()));
+			messageToClient(client, replyGenerator(RPL_WELCOME, client.getNickname()));
 			// std::cout << CYAN << "IP--> " << client.getIpAddress() << RESET << std::endl;
 		}
 	}
@@ -157,7 +157,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the client is registered
 	if (!client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 	
@@ -172,7 +172,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the channel name is valid
 	std::string channelName = client.getInput().arguments[0];
 	if (!isValidChannelName(channelName)){
-		messageToClient(client, client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), channelName));
+		messageToClient(client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), channelName));
 		return ;
 	}
 
@@ -209,7 +209,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	// * check text msg validity
 
 	if (!client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 	}
 
 	s_prvMsgCommand			  privmsgInput;
@@ -246,7 +246,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				}
 				//X Channel doesn't exist X
 				if (!n)
-					messageToClient(client, client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top()));
+					messageToClient(client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top()));
 			}
 
 			/* ~~~message to client~~~ */
@@ -256,7 +256,9 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
 						//√ Client exists √
 						// std::cout << YELLOW << client.getIpAddress() <<  RESET << std::endl;
-						if (messageToClient(*serverInfo.clients.at(i), client, privmsgInput.message)){
+						s_messageInfo messageInfo = {&client, serverInfo.clients.at(i),
+									  privmsgInput.message};
+						if (messageToClient(messageInfo)){
 							privmsgInput.targets.pop();
 							n = true;
 							break ;
@@ -267,7 +269,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				}
 				//X Client doesn't exist X
 				if (!n)
-					messageToClient(client, client, replyGenerator(ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top()));
+					messageToClient(client, replyGenerator(ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top()));
 			}
 			if (!privmsgInput.targets.empty())
 				privmsgInput.targets.pop();
@@ -282,7 +284,7 @@ void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 
@@ -292,7 +294,7 @@ void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 }
@@ -301,7 +303,7 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 }
@@ -310,7 +312,7 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
 }

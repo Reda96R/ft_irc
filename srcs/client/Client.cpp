@@ -78,7 +78,7 @@ void	Client::setUsername( std::string& username ){
 }
 
 void	Client::setIpAddress( std::string& ipAddress ){
-	this->clientUsername = ipAddress;
+	this->clientIpAddress = ipAddress;
 }
 
 void	Client::setType( bool type ){
@@ -126,7 +126,7 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
         int client_sockfd = accept(serverSocket, (struct sockaddr *) &client_addr, &client_len);
         if (client_sockfd < 0) {
             std::cerr << RED << "Error accepting client connection" << RESET << std::endl;
-            return false;
+            return (false);
         } else {
             std::cout << GREEN << "New client connected" << RESET << std::endl;
         }
@@ -148,7 +148,7 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
 		fds.push_back(pfd);
         clients.push_back(this);
 		
-		return true;
+		return (true);
 }
 
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){

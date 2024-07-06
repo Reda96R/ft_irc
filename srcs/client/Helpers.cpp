@@ -16,7 +16,7 @@ bool	isValidChannelName( std::string& channelName ){
 bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privmsgInput, Client& client ){
 	if (arguments.empty() || arguments.size() < 2){
 		if (arguments.size() < 2)
-			messageToClient(client, client, replyGenerator(ERR_NOTEXTTOSEND, client.getNickname()));
+			messageToClient(client, replyGenerator(ERR_NOTEXTTOSEND, client.getNickname()));
 		return (false);
 	}
 
@@ -35,8 +35,7 @@ bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privm
 	return (true);
 }
 
-bool	messageToClient( Client& target, Client& sender, std::string message){
-	(void) sender;
+bool	messageToClient( Client& target, std::string message){
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
 
@@ -45,11 +44,27 @@ bool	messageToClient( Client& target, Client& sender, std::string message){
 	return (true);
 }
 
+
+bool	messageToClient( s_messageInfo messageInfo ){
+	if (messageInfo.message.at(messageInfo.message.size() - 1) != '\n')
+		messageInfo.message += '\n';
+
+	//formating the sender in the message
+	messageInfo.message = ":"  + messageInfo.sender->getNickname()  +
+						  "!~" + messageInfo.sender->getUsername()  +
+						  "@"  + messageInfo.sender->getIpAddress() +
+						  " "  + messageInfo.message;
+
+	if (send(messageInfo.receiver->getPollFd(), messageInfo.message.c_str(), messageInfo.message.length(), 0) == -1)
+		return (false);
+	return (true);
+}
+
 bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Checking if the user is part of the channel
 	std::vector<std::string>::iterator it = std::find(sender.channels.begin(), sender.channels.end(), target.getChannelName());
 	if (it == sender.channels.end()){
-		messageToClient(sender, sender, replyGenerator(ERR_NOTONCHANNEL, sender.getNickname(), target.getChannelName()));
+		messageToClient(sender, replyGenerator(ERR_NOTONCHANNEL, sender.getNickname(), target.getChannelName()));
 		return (false);
 	}
 
@@ -59,8 +74,9 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Broadcasting the message
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
 		if (target.getChannelClients()[i]->getNickname() != sender.getNickname()){
-			if (!messageToClient(*target.getChannelClients()[i], *target.getChannelClients()[i], message)){
-				std::cout << RED << "send failure" << RESET << std::endl;
+			s_messageInfo messageInfo = {&sender, target.getChannelClients()[i], message};
+			if (!messageToClient(messageInfo)){
+				std::cout << RED << "Send failure" << RESET << std::endl;
 				return (false);
 			}
 		}

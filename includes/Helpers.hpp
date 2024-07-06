@@ -4,6 +4,7 @@
 # include <sstream>
 # include "Client.hpp"
 # include "Channel.hpp"
+#include "Structs.hpp"
 # include "macros.hpp"
 
 //::::::::::::::::::Channels:::::::::::::::::::::::::
@@ -11,7 +12,9 @@ bool		isValidChannelName( std::string& );
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
 bool		privmsgAnalyser(std::vector<std::string>, s_prvMsgCommand& , Client& );
-bool		messageToClient( Client& , Client& , std::string );
+
+bool		messageToClient( Client&, std::string );
+bool		messageToClient( s_messageInfo );
 bool		messageToChannel( Channel& , Client& , std::string );
 
 bool		trailingCheck( std::vector<std::string> arguments );
