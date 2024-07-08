@@ -86,7 +86,7 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 }
 bool	trailingCheck( std::vector<std::string> arguments ){
 	for (size_t i = 0; i < arguments.size(); ++i){
-		if (arguments[i].at(0) == ':')
+		if (arguments.at(0).at(0) == ':')
 			return (true);
 	}
 	return (false);

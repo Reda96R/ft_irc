@@ -99,36 +99,39 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	// √ check if already REGISTERED
 	// √ check if command's parameters exist if not set username to unknown
 	// * parse the content
-	// * set the username
+	// √ set the username
+
+	if (!client.getStatus().authenticated || client.getStatus().registered){
+		if (!client.getStatus().authenticated)
+			messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		else
+			messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
+		return ;
+	}
 
 	std::vector<std::string> arguments = client.getInput().arguments;
-	for (size_t i = 0; i < arguments.size() - 1; ++i){
-		if (arguments.at(i).at(0) == ':')
-			return ;
-	}
-
-	if (arguments.size() < 4){
-		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
+	if (arguments.size() != 4){
+		if (arguments.empty() || arguments.size() < 4)
+			messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
 		return ;
 	}
 
-	if (!client.getStatus().authenticated){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
-		return ;
-	}
-	else if (client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
-		return ;
-	}
-	else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
-		std::string	  tmp = "unknown";
-		client.setUsername(tmp);
-		client.setStatus("user", true);
-		messageToClient(client, "User accepted");
-	}
-	else if (!client.getInput().arguments.empty())
+	// for (size_t i = 0; i < arguments.size() - 1; ++i){
+	// 	if (arguments.at(i).at(0) == ':')
+	// 		return ;
+	// }
+
+	// else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
+	// 	std::string	  tmp = "unknown";
+	// 	client.setUsername(tmp);
+	// 	client.setStatus("user", true);
+	// 	messageToClient(client, "User accepted");
+	// }
+	if (!client.getInput().arguments.empty())
 	{
 		client.setUsername(client.getInput().arguments[0]);
+		client.setRealname(client.getInput().arguments[3]);
+		std::cout << YELLOW << client.getRealname() << RESET << std::endl;
 		client.setStatus("user", true);
 		if (client.getStatus().nick){
 			client.setStatus("registered", true);
@@ -136,7 +139,6 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		messageToClient(client, "User accepted");
 		if (client.getStatus().registered){
 			messageToClient(client, replyGenerator(RPL_WELCOME, client.getNickname()));
-			// std::cout << CYAN << "IP--> " << client.getIpAddress() << RESET << std::endl;
 		}
 	}
 }

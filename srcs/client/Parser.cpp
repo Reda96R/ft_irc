@@ -2,6 +2,7 @@
 # include "../../includes/macros.hpp"
 # include "../../includes/Commands.hpp"
 # include "../../includes/IrcErrors.hpp"
+#include <string>
 
 //TODO : 
 /* !!! check for tabs also in find_first_not_of() !!! */
@@ -68,6 +69,7 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 			client.setInput("arguments", tmp);
 		}
 		else{
+			//TODO: check for the last arg if it is trailing or not
 			while (argumentEnd != std::string::npos){
 				tmp = input.substr(position, argumentEnd - position);
 				if (tmp.at(0) == ':'){
@@ -80,11 +82,22 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 				if (position == std::string::npos)
 					break ;
 				argumentEnd = input.find(' ', position);
+				//TODO: if arg is == npos then there is a last arg that needs to be parsed
+				if (argumentEnd == std::string::npos){
+					tmp = input.substr(position , input.size() - position);
+					std::cout << "tmp--> "  << tmp << std::endl;
+					if (tmp.at(0) == ':'){
+						tmp = input.substr(position, input.size() - position);
+						if (input.length() == position){
+							tmp = input.substr(position + 1, input.size() - position);
+						}
+					std::cout << GREEN << tmp << RESET << std::endl;
+						// tmp = input.substr(position + 1, argumentEnd);
+					}
+					client.setInput("arguments", tmp);
+				}
 			}
-			if (argumentEnd == std::string::npos){
-				tmp = input.substr(position, argumentEnd);
-				client.setInput("arguments", tmp);
-			}
+			//TODO: here we probably need to check for position == npos
 		}
 	}
 
@@ -95,10 +108,10 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 	void (Commands::*cmd)(Client&, struct ServerInfo&) = it->second;
 	(commands.*cmd)(client, serverInfo);
 
-	// std::cout << YELLOW << "command ---> " << client.getInput().command << RESET << std::endl;
-	// for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
-	// 	std::cout << YELLOW << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
-	// }
+	std::cout << CYAN << "command ---> " << client.getInput().command << RESET << std::endl;
+	for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
+		std::cout << CYAN << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
+	}
 
 	client.clearInput();
 

@@ -45,6 +45,10 @@ std::string	  Client::getIpAddress( void ) const{
 	return (this->clientIpAddress);
 }
 
+std::string	  Client::getRealname( void ) const{
+	return (this->clientRealname);
+}
+
 std::string	  Client::getUsername( void ) const{
 	return (this->clientUsername);
 }
@@ -75,6 +79,10 @@ void	Client::setNickname( std::string& nickname ){
 
 void	Client::setUsername( std::string& username ){
 	this->clientUsername = username;
+}
+
+void	Client::setRealname( std::string& realname ){
+	this->clientRealname = realname;
 }
 
 void	Client::setIpAddress( std::string& ipAddress ){
@@ -124,6 +132,7 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
         socklen_t client_len = sizeof(client_addr);
 
         int client_sockfd = accept(serverSocket, (struct sockaddr *) &client_addr, &client_len);
+
         if (client_sockfd < 0) {
             std::cerr << RED << "Error accepting client connection" << RESET << std::endl;
             return (false);
