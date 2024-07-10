@@ -21,8 +21,7 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 		return (false);
 	}
 	
-	if (!input.empty() && input[input.size() - 1] == '\r')
-		input = input.substr(0, input.size() - 1);
+	if (!input.empty() && input[input.size() - 1] == '\r') input = input.substr(0, input.size() - 1);
 
 	// Parsing prefix if found
 	if (!input.empty() && input[position] == ':'){
@@ -80,9 +79,6 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 				if (position == std::string::npos)
 					break ;
 				argumentEnd = input.find(' ', position);
-				if (argumentEnd == std::string::npos){
-					position = 0;
-				}
 			}
 		}
 	}

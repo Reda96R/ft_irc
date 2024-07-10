@@ -98,7 +98,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	// √ check if AUTHENTICATED
 	// √ check if already REGISTERED
 	// √ check if command's parameters exist if not set username to unknown
-	// * parse the content
+	// √ parse the content
 	// √ set the username
 
 	if (!client.getStatus().authenticated || client.getStatus().registered){
@@ -110,27 +110,25 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	}
 
 	std::vector<std::string> arguments = client.getInput().arguments;
+
 	if (arguments.size() != 4){
 		if (arguments.empty() || arguments.size() < 4)
 			messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
 		return ;
 	}
 
-	// for (size_t i = 0; i < arguments.size() - 1; ++i){
-	// 	if (arguments.at(i).at(0) == ':')
-	// 		return ;
-	// }
+	for (size_t i = 0; i < arguments.size() - 1; ++i){
+		if (arguments.at(i).at(0) == ':')
+			return ;
+	}
 
-	// else if (client.getInput().arguments.empty() || client.getInput().arguments[0].empty()){
-	// 	std::string	  tmp = "unknown";
-	// 	client.setUsername(tmp);
-	// 	client.setStatus("user", true);
-	// 	messageToClient(client, "User accepted");
-	// }
-	if (!client.getInput().arguments.empty())
+	if (!arguments.empty())
 	{
-		client.setUsername(client.getInput().arguments[0]);
-		client.setRealname(client.getInput().arguments[3]);
+		client.setUsername(arguments[0]);
+		if (arguments.at(3).at(0) == ':'){
+			arguments.at(3) = arguments.at(3).substr(1, arguments.at(3).size() - 1);
+		}
+		client.setRealname(arguments.at(3));
 		client.setStatus("user", true);
 		if (client.getStatus().nick){
 			client.setStatus("registered", true);
