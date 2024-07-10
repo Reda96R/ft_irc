@@ -131,7 +131,6 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	{
 		client.setUsername(client.getInput().arguments[0]);
 		client.setRealname(client.getInput().arguments[3]);
-		std::cout << YELLOW << client.getRealname() << RESET << std::endl;
 		client.setStatus("user", true);
 		if (client.getStatus().nick){
 			client.setStatus("registered", true);

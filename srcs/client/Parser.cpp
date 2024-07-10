@@ -2,10 +2,6 @@
 # include "../../includes/macros.hpp"
 # include "../../includes/Commands.hpp"
 # include "../../includes/IrcErrors.hpp"
-#include <string>
-
-//TODO : 
-/* !!! check for tabs also in find_first_not_of() !!! */
 
 bool	commandParser( std::string& input, Client& client, struct ServerInfo& serverInfo){
 	size_t			position = 0;
@@ -20,7 +16,8 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 	t_commandsMap	commandsMap = commands.getCommandMap();
 
 	if (input.empty()){
-		std::cerr << "eof error" << std::endl;
+		//TODO: this message is only for debugging
+		std::cerr << "empty input" << std::endl;
 		return (false);
 	}
 	
@@ -52,6 +49,7 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 		client.setInput("command", tmp);
 	}
 
+	// Checking the availability of the command
 	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
 	if (it == commandsMap.end()){
 		messageToClient(client, replyGenerator(ERR_UNKNOWNCOMMAND, client.getNickname()));
@@ -65,12 +63,12 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 	if (args){
 		argumentEnd = input.find(' ', position);
 		if (argumentEnd == std::string::npos){
-			tmp = input.substr(position, argumentEnd);
+			tmp = input.substr(position, input.size());
 			client.setInput("arguments", tmp);
 		}
 		else{
 			//TODO: check for the last arg if it is trailing or not
-			while (argumentEnd != std::string::npos){
+			while (position != std::string::npos){
 				tmp = input.substr(position, argumentEnd - position);
 				if (tmp.at(0) == ':'){
 					tmp = input.substr(position, input.size() - position);
@@ -82,36 +80,21 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 				if (position == std::string::npos)
 					break ;
 				argumentEnd = input.find(' ', position);
-				//TODO: if arg is == npos then there is a last arg that needs to be parsed
 				if (argumentEnd == std::string::npos){
-					tmp = input.substr(position , input.size() - position);
-					std::cout << "tmp--> "  << tmp << std::endl;
-					if (tmp.at(0) == ':'){
-						tmp = input.substr(position, input.size() - position);
-						if (input.length() == position){
-							tmp = input.substr(position + 1, input.size() - position);
-						}
-					std::cout << GREEN << tmp << RESET << std::endl;
-						// tmp = input.substr(position + 1, argumentEnd);
-					}
-					client.setInput("arguments", tmp);
+					position = 0;
 				}
 			}
-			//TODO: here we probably need to check for position == npos
 		}
 	}
 
-	//TODO:
-	// check if there's more left
+	// std::cout << CYAN << "command ---> " << client.getInput().command << RESET << std::endl;
+	// for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
+	// 	std::cout << CYAN << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
+	// }
 	
 	// Command execution
 	void (Commands::*cmd)(Client&, struct ServerInfo&) = it->second;
 	(commands.*cmd)(client, serverInfo);
-
-	std::cout << CYAN << "command ---> " << client.getInput().command << RESET << std::endl;
-	for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
-		std::cout << CYAN << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
-	}
 
 	client.clearInput();
 
