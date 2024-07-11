@@ -3,6 +3,8 @@
 # include "../../includes/Commands.hpp"
 # include "../../includes/IrcErrors.hpp"
 
+//TODO print the user profile with its full infos
+
 bool	commandParser( std::string& input, Client& client, struct ServerInfo& serverInfo){
 	size_t			position = 0;
 
@@ -21,7 +23,8 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 		return (false);
 	}
 	
-	if (!input.empty() && input[input.size() - 1] == '\r') input = input.substr(0, input.size() - 1);
+	if (!input.empty() && input[input.size() - 1] == '\r')
+		input = input.substr(0, input.size() - 1);
 
 	// Parsing prefix if found
 	if (!input.empty() && input[position] == ':'){

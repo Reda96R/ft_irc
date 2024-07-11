@@ -95,11 +95,12 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 
 void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	//TODO:
-	// √ check if AUTHENTICATED
-	// √ check if already REGISTERED
+	// √ check if authenticated
+	// √ check if already registered
 	// √ check if command's parameters exist if not set username to unknown
 	// √ parse the content
 	// √ set the username
+	// * handle the server and host names
 
 	if (!client.getStatus().authenticated || client.getStatus().registered){
 		if (!client.getStatus().authenticated)
