@@ -179,8 +179,6 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the channel already exists
 	for (std::vector<Channel*>::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); it++){
 		if ((*it)->getChannelName() == channelName){
-
-
 			if (std::find(client.channels.begin(), client.channels.end(), (*it)->getChannelName()) == client.channels.end()){
 			// if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end()){
 				(*it)->addClient(client);
@@ -228,7 +226,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 		//
 
 		while (!privmsgInput.targets.empty()){
-
 			/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
 				bool	n = false;
@@ -236,7 +233,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
 						//√ Channel exists √
 						if (messageToChannel(*serverInfo.channels.at(i), client, privmsgInput.message)){
-							privmsgInput.targets.pop();
 							n = true;
 							break ;
 						}
@@ -255,11 +251,9 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
 						//√ Client exists √
-						// std::cout << YELLOW << client.getIpAddress() <<  RESET << std::endl;
 						s_messageInfo messageInfo = {&client, serverInfo.clients.at(i),
 									  privmsgInput.message};
 						if (messageToClient(messageInfo)){
-							privmsgInput.targets.pop();
 							n = true;
 							break ;
 						}
@@ -276,8 +270,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 		}
 	}
 }
-
-
 
 			/* ~~~channel commands ~~~ */
 void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
