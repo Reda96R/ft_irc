@@ -13,7 +13,7 @@ NAME 		= ircserv
 HEADER 		= -I includes
 # MAIN 		= r_testing_main  
 # M_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
-MAIN 		= a_main_testing
+MAIN 		= main
 M_OBJS 		=$(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 
 #::::::::::::::::MLX:::::::::::::::#

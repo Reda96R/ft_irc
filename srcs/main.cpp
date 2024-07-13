@@ -24,8 +24,7 @@ int main(int argc, char **argv)
 
     while(true) {
         handlingPolling(server_info, fds, server_info.clients);
-
-}
+	}
     close(server_info.sockfd);
     return 0;
 
