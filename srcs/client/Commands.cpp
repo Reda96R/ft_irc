@@ -251,6 +251,10 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
 						//√ Client exists √
+						if (&client == serverInfo.clients.at(i)){
+							n = true;
+							break ;
+						}
 						s_messageInfo messageInfo = {&client, serverInfo.clients.at(i),
 									  privmsgInput.message};
 						if (messageToClient(messageInfo)){

@@ -49,6 +49,8 @@ bool	messageToClient( s_messageInfo messageInfo ){
 	if (messageInfo.message.at(messageInfo.message.size() - 1) != '\n')
 		messageInfo.message += '\n';
 
+	// if (messageInfo.sender == messageInfo.receiver)
+	// 	return (false);
 	//formating the sender in the message
 	messageInfo.message = ":"  + messageInfo.sender->getNickname()  +
 						  "!~" + messageInfo.sender->getUsername()  +
