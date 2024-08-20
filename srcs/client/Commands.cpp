@@ -1,6 +1,7 @@
 # include "../../includes/Commands.hpp"
 # include "../../includes/Server.hpp"
 # include "../../includes/IrcErrors.hpp"
+#include <string>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -64,10 +65,6 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
 		return ;
 	}
-	else if (client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
-		return ;
-	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments.at(0).empty()){
 		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "NICK"));
 		return ;
@@ -82,6 +79,21 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		}
 		if (client.getInput().arguments.at(0).length() > 9)
 			return ;
+
+		//Changing the Nickname
+		if (client.getStatus().registered){
+			std::string oldnick = client.getNickname();
+			client.setNickname(client.getInput().arguments.at(0));
+			messageToClient(client, "Nickname accepted");
+			std::string	  message = oldnick + " Changed his nickname to " + client.getNickname();
+			for (size_t i = 0; i < serverInfo.clients.size(); ++i){
+				if (serverInfo.clients[i]->getNickname() != client.getNickname()){
+					s_messageInfo messageInfo = {&client, serverInfo.clients.at(i), message};
+					messageToClient(messageInfo);
+				}
+			}
+			return ;
+		}
 		client.setNickname(client.getInput().arguments.at(0));
 		client.setStatus("nick", true);
 		if (client.getStatus().user){
