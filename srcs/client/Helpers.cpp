@@ -15,8 +15,10 @@ bool	isValidChannelName( std::string& channelName ){
 //replace errors with their numerical values
 bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privmsgInput, Client& client ){
 	if (arguments.empty() || arguments.size() < 2){
-		if (arguments.size() < 2)
-			messageToClient(client, replyGenerator(ERR_NOTEXTTOSEND, client.getNickname()));
+		if (arguments.size() < 2){
+			s_ircReply	  replyInfo = {1, ERR_NOTEXTTOSEND, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
 		return (false);
 	}
 
@@ -51,11 +53,11 @@ bool	messageToClient( s_messageInfo messageInfo ){
 
 	// if (messageInfo.sender == messageInfo.receiver)
 	// 	return (false);
-	//formating the sender in the message
+	//Formating the sender in the message
 	messageInfo.message = ":"  + messageInfo.sender->getNickname()  +
 						  "!~" + messageInfo.sender->getUsername()  +
 						  "@"  + messageInfo.sender->getIpAddress() +
-						  " "  + messageInfo.message;
+						  " "  + "PRIVMSG" + " " + messageInfo.targetName + " " + messageInfo.message;
 
 	if (send(messageInfo.receiver->getPollFd(), messageInfo.message.c_str(), messageInfo.message.length(), 0) == -1)
 		return (false);
@@ -66,7 +68,8 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Checking if the user is part of the channel
 	std::vector<std::string>::iterator it = std::find(sender.channels.begin(), sender.channels.end(), target.getChannelName());
 	if (it == sender.channels.end()){
-		messageToClient(sender, replyGenerator(ERR_NOTONCHANNEL, sender.getNickname(), target.getChannelName()));
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, sender.getNickname(), target.getChannelName(), errorMessages.at(replyInfo.errorCode) };
+		messageToClient(sender, replyGenerator(replyInfo));
 		return (false);
 	}
 
@@ -76,7 +79,8 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Broadcasting the message
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
 		if (target.getChannelClients()[i]->getNickname() != sender.getNickname()){
-			s_messageInfo messageInfo = {&sender, target.getChannelClients()[i], message};
+			s_messageInfo messageInfo = {target.getChannelName(), &sender,
+										target.getChannelClients()[i], message};
 			if (!messageToClient(messageInfo)){
 				std::cout << RED << "Send failure" << RESET << std::endl;
 				return (false);
@@ -92,6 +96,30 @@ bool	trailingCheck( std::vector<std::string> arguments ){
 			return (true);
 	}
 	return (false);
+}
+
+std::string	  replyGenerator( s_ircReply replyInfo ){
+	std::string	  reply;
+
+	//sender + target + message
+	if (replyInfo.type == 1){
+		reply = ":ircserv " + intToString(replyInfo.errorCode) + " "
+							+ replyInfo.sender + " "
+							+ replyInfo.target + " "
+							+ ":" + replyInfo.message + "\n";
+	}
+	//sender + message
+	else if (replyInfo.type == 2) {
+		reply = ":ircserv " + intToString(replyInfo.errorCode) + " " + replyInfo.sender + " "
+							+ ":" + replyInfo.message + " "
+							+ replyInfo.target + "\n";
+	}
+	return (reply);
+}
+
+std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target){
+	return (":ircserv " + intToString(errorCode) + " " + sender + " "
+			+ target + " :" + errorMessages.at(errorCode) + " \r\n"); 
 }
 
 //::::::::::::::::::General:::::::::::::::::::::::::
@@ -110,7 +138,7 @@ void compareStrings(const std::string& str1, const std::string& str2) {
 
 std::string intToString(int value) {
     std::ostringstream oss;
-    oss << value;
+    oss << std::setw(3) << std::setfill('0') << value;
     return oss.str();
 }
 

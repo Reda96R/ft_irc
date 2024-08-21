@@ -15,7 +15,9 @@ struct s_status { // struct showcasing the provided info and state of the client
 	bool	user;
 	bool	authenticated;
 	bool	registered;
+	bool	connected;
 };
+
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
 struct s_ircCommand {
@@ -30,6 +32,7 @@ struct s_prvMsgCommand {
 };
 
 struct s_messageInfo {
+	std::string	  targetName;
 	Client		  *sender;
 	Client		  *receiver;
 	std::string	  message;

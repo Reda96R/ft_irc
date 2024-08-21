@@ -5,6 +5,7 @@
 # include <map>
 # include "Helpers.hpp"
 
+
 enum IrcErrors{
 	RPL_WELCOME			  = 001,
 	ERR_NOSUCHNICK		  = 401,
@@ -32,12 +33,26 @@ enum IrcErrors{
 	ERR_NOCHANMODES		  = 477,
 	ERR_BANLISTFULL		  = 478,
 	ERR_CHANOPRIVSNEEDED  = 482,
+
 	ERR_UMODEUNKNOWNFLAG  = 501
 };
+
+struct s_ircReply {
+	int					type;
+	IrcErrors			errorCode;
+	const std::string&	sender;
+	const std::string&	target;
+	const std::string&	message;
+
+};
+
+//nick + target + channel
+	// ERR_USERNOTINCHANNEL  = 441,
 
 extern std::map<IrcErrors, std::string> errorMessages;
 
 
-std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target = "");
+// std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target = "" );
+std::string	  replyGenerator( s_ircReply replyInfo );
 
 #endif

@@ -54,7 +54,8 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 	// Checking the availability of the command
 	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
 	if (it == commandsMap.end()){
-		messageToClient(client, replyGenerator(ERR_UNKNOWNCOMMAND, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_UNKNOWNCOMMAND, client.getNickname(), client.getInput().command, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return (false);
 	}
 	position = input.find_first_not_of(' ', commandEnd);

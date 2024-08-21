@@ -30,6 +30,8 @@ class Commands {
 		void	userCommand( Client&, struct ServerInfo& );
 		void	joinCommand( Client&, struct ServerInfo& );
 		void	privmsgCommand( Client&, struct ServerInfo& );
+		void	pingCommand( Client&, struct ServerInfo& );
+		void	quitCommand( Client&, struct ServerInfo& );
 
 			/* ~~~channel commands ~~~ */
 		void	kickChannelCommand( Client&, struct ServerInfo& );

@@ -3,7 +3,7 @@
 std::map<IrcErrors, std::string> errorMessages;
 
 void initializeErrorMessages() {
-    errorMessages[RPL_WELCOME]			= "Welcome to the Internet Relay Network!";
+    errorMessages[RPL_WELCOME]			= "Welcome to the Internet Relay Network";
     errorMessages[ERR_NOSUCHNICK]		= "No such nick/channel";
     errorMessages[ERR_NOSUCHCHANNEL]	= "No such channel";
     errorMessages[ERR_CANNOTSENDTOCHAN] = "Cannot send to channel";
@@ -18,7 +18,7 @@ void initializeErrorMessages() {
     errorMessages[ERR_NOTREGISTERED]	= "You have not registered";
     errorMessages[ERR_NEEDMOREPARAMS]	= "Not enough parameters";
     errorMessages[ERR_ALREADYREGISTRED] = "Unauthorized command (already registered)";
-    errorMessages[ERR_PASSWDMISMATCH]	= "Password incorrect";
+    errorMessages[ERR_PASSWDMISMATCH]	= "Password required";
     errorMessages[ERR_KEYSET]			= "Channel key already set";
     errorMessages[ERR_CHANNELISFULL]	= "Cannot join channel (+l)";
     errorMessages[ERR_UNKNOWNMODE]		= "is unknown mode char to me";
@@ -40,7 +40,3 @@ struct ErrorMessagesInitializer {
 } errorMessagesInitializer;
 
 
-std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target){
-	return (":ircserv " + intToString(errorCode) + " " + sender + " "
-			+ target + " :" + errorMessages.at(errorCode) + " \r\n"); 
-}

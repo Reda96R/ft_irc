@@ -2,6 +2,7 @@
 # define HELPERS_HPP
 
 # include <sstream>
+# include <iomanip>
 # include "Client.hpp"
 # include "Channel.hpp"
 #include "Structs.hpp"

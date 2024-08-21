@@ -11,6 +11,8 @@ Commands::Commands( void ){
 	this->commandsMap["USER"] = &Commands::userCommand;
 	this->commandsMap["JOIN"] = &Commands::joinCommand;
 	this->commandsMap["PRIVMSG"] = &Commands::privmsgCommand;
+	this->commandsMap["PING"] = &Commands::pingCommand;
+
 			/* ~~~channel commands ~~~ */
 	this->commandsMap["KICK"] = &Commands::kickChannelCommand;
 	this->commandsMap["INVITE"] = &Commands::inviteChannelCommand;
@@ -41,20 +43,25 @@ void	Commands::passCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments))
 		return ;
 
-	if (client.getStatus().authenticated)
-		messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
+	if (client.getStatus().authenticated){
+		s_ircReply	  replyInfo = {1, ERR_ALREADYREGISTRED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+	}
 
-	else if (client.getInput().arguments.empty())
-		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "PASS"));
+	else if (client.getInput().arguments.empty()){
+		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "PASS", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+	}
 
 	else if (client.getInput().arguments.size() < 2 && client.getInput().arguments.at(0) == serverInfo.password){
 		client.setStatus("authenticated", true);
 		client.setStatus("pass", true);
-		messageToClient(client, "Password accepted");
 	}
 
-	else
-		messageToClient(client, replyGenerator(ERR_PASSWDMISMATCH, client.getNickname()));
+	else{
+		s_ircReply	  replyInfo = {1, ERR_PASSWDMISMATCH, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+	}
 }
 
 void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
@@ -62,18 +69,21 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		return ;
 
 	if (!client.getStatus().authenticated){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 	else if (client.getInput().arguments.empty() || client.getInput().arguments.at(0).empty()){
-		messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "NICK"));
+		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "NICK", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 	else if (client.getInput().arguments.size() < 2)
 	{
 		for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 			if (client.getInput().arguments.at(0) == serverInfo.clients.at(i)->getNickname()){
-				messageToClient(client, replyGenerator(ERR_NICKNAMEINUSE, client.getNickname()));
+				s_ircReply	  replyInfo = {1, ERR_NICKNAMEINUSE, serverInfo.clients.at(i)->getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
 				return ;
 			}
 		}
@@ -84,11 +94,10 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		if (client.getStatus().registered){
 			std::string oldnick = client.getNickname();
 			client.setNickname(client.getInput().arguments.at(0));
-			messageToClient(client, "Nickname accepted");
 			std::string	  message = oldnick + " Changed his nickname to " + client.getNickname();
 			for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 				if (serverInfo.clients[i]->getNickname() != client.getNickname()){
-					s_messageInfo messageInfo = {&client, serverInfo.clients.at(i), message};
+					s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i), message};
 					messageToClient(messageInfo);
 				}
 			}
@@ -99,9 +108,12 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		if (client.getStatus().user){
 			client.setStatus("registered", true);
 		}
-		messageToClient(client, "Nickname accepted");
-		if (client.getStatus().registered)
-			messageToClient(client, replyGenerator(RPL_WELCOME, client.getNickname()));
+		// messageToClient(client, "Nickname accepted");
+		if (client.getStatus().registered){
+			client.setStatus("connected", true);
+			s_ircReply	  replyInfo = {2, RPL_WELCOME, client.getNickname(), client.getNickname() + "!", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
 	}
 }
 
@@ -115,18 +127,24 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	// * handle the server and host names
 
 	if (!client.getStatus().authenticated || client.getStatus().registered){
-		if (!client.getStatus().authenticated)
-			messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
-		else
-			messageToClient(client, replyGenerator(ERR_ALREADYREGISTRED, client.getNickname()));
+		if (!client.getStatus().authenticated){
+			s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
+		else{
+			s_ircReply	  replyInfo = {1, ERR_ALREADYREGISTRED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
 		return ;
 	}
 
 	std::vector<std::string> arguments = client.getInput().arguments;
 
 	if (arguments.size() != 4){
-		if (arguments.empty() || arguments.size() < 4)
-			messageToClient(client, replyGenerator(ERR_NEEDMOREPARAMS, client.getNickname(), "USER"));
+		if (arguments.empty() || arguments.size() < 4){
+			s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "USER", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
 		return ;
 	}
 
@@ -146,9 +164,11 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		if (client.getStatus().nick){
 			client.setStatus("registered", true);
 		}
-		messageToClient(client, "User accepted");
+		// messageToClient(client, "User accepted");
 		if (client.getStatus().registered){
-			messageToClient(client, replyGenerator(RPL_WELCOME, client.getNickname()));
+			client.setStatus("connected", true);
+			s_ircReply	  replyInfo = {2, RPL_WELCOME, client.getNickname(), client.getNickname() + "!", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
 		}
 	}
 }
@@ -165,11 +185,11 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 // 	return true;
 // }
 
-
 void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the client is registered
 	if (!client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 	
@@ -184,7 +204,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the channel name is valid
 	std::string channelName = client.getInput().arguments[0];
 	if (!isValidChannelName(channelName)){
-		messageToClient(client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), channelName));
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 
@@ -195,6 +216,15 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 			// if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end()){
 				(*it)->addClient(client);
 				client.channels.push_back((*it)->getChannelName());
+
+				std::string message = ":"  + client.getNickname()  +
+						  "!~" + client.getUsername()  +
+						  "@"  + client.getIpAddress() +
+						  " "  + "JOIN" + " " + (*it)->getChannelName();
+				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i){
+					if ((*it)->getChannelClients().at(i)->getNickname() != client.getNickname())
+						messageToClient(*(*it)->getChannelClients().at(i), message);
+				}
 			}
 			return ;
 		}
@@ -219,7 +249,8 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	// * check text msg validity
 
 	if (!client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 	}
 
 	s_prvMsgCommand			  privmsgInput;
@@ -253,8 +284,10 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 					}
 				}
 				//X Channel doesn't exist X
-				if (!n)
-					messageToClient(client, replyGenerator(ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top()));
+				if (!n){
+					s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
+					messageToClient(client, replyGenerator(replyInfo));
+				}
 			}
 
 			/* ~~~message to client~~~ */
@@ -267,7 +300,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 							n = true;
 							break ;
 						}
-						s_messageInfo messageInfo = {&client, serverInfo.clients.at(i),
+						s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i),
 									  privmsgInput.message};
 						if (messageToClient(messageInfo)){
 							n = true;
@@ -278,8 +311,11 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 					}
 				}
 				//X Client doesn't exist X
-				if (!n)
-					messageToClient(client, replyGenerator(ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top()));
+				if (!n){
+					s_ircReply	  replyInfo = {1, ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
+					messageToClient(client, replyGenerator(replyInfo));
+					// privmsgInput.targets.pop();
+				}
 			}
 			if (!privmsgInput.targets.empty())
 				privmsgInput.targets.pop();
@@ -287,22 +323,46 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	}
 }
 
+void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
+	(void)serverInfo;
+	if (!client.getStatus().registered){
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+	std::string message = ":ircserv PONG ircserv " + client.getInput().arguments.at(0) + "\n";
+	send(client.getPollFd(), message.c_str(), message.length(), 0);
+}
+
+void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
+	(void)serverInfo;
+	if (!client.getStatus().registered){
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+	client.setStatus("connected", false);
+	std::string message = "ERROR :Closing Link: " + client.getInput().arguments.at(0) + "!\n";
+	send(client.getPollFd(), message.c_str(), message.length(), 0);
+}
+
 			/* ~~~channel commands ~~~ */
 void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
-
 }
 
 void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 }
@@ -311,7 +371,8 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 }
@@ -320,7 +381,8 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
-		messageToClient(client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
+		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 }

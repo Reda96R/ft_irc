@@ -104,6 +104,8 @@ void	Client::setStatus( std::string target, bool value ){
 		this->clientStatus.authenticated = value;
 	else if (target == "registered")
 		this->clientStatus.registered = value;
+	else if (target == "connected")
+		this->clientStatus.connected = value;
 }
 
 void	Client::setSocket( const int& socket ){
