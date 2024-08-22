@@ -162,8 +162,8 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
 		return (true);
 }
 
+// Receives message from clients
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){
-	// TODO: receive the message from the clients
 	int		ret;
     char	buf[1024];
     std::string		message;

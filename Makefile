@@ -11,12 +11,10 @@ CC 			= c++
 #:::::::::::::::MANDATORY:::::::::::::::#
 NAME 		= ircserv
 HEADER 		= -I includes
-# MAIN 		= r_testing_main  
-# M_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 MAIN 		= main
 M_OBJS 		=$(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN))))
 
-#::::::::::::::::MLX:::::::::::::::#
+#::::::::::::::::OS:::::::::::::::#
 ifeq ($(OS), Darwin)
 # COMP 		= 
 # COMP_O 	=

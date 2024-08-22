@@ -51,8 +51,8 @@ struct s_ircReply {
 
 extern std::map<IrcErrors, std::string> errorMessages;
 
-
-// std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target = "" );
 std::string	  replyGenerator( s_ircReply replyInfo );
+
+
 
 #endif

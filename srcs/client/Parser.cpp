@@ -3,8 +3,6 @@
 # include "../../includes/Commands.hpp"
 # include "../../includes/IrcErrors.hpp"
 
-//TODO print the user profile with its full infos
-
 bool	commandParser( std::string& input, Client& client, struct ServerInfo& serverInfo){
 	size_t			position = 0;
 

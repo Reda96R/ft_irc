@@ -4,7 +4,6 @@
 
 // USELESS CANONICAL FORM
 Channel::Channel(void) {
-
 }
 
 Channel::Channel(const Channel& other) {

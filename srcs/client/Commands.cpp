@@ -1,7 +1,6 @@
 # include "../../includes/Commands.hpp"
 # include "../../includes/Server.hpp"
 # include "../../includes/IrcErrors.hpp"
-#include <string>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Commands::Commands( void ){
@@ -108,7 +107,6 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		if (client.getStatus().user){
 			client.setStatus("registered", true);
 		}
-		// messageToClient(client, "Nickname accepted");
 		if (client.getStatus().registered){
 			client.setStatus("connected", true);
 			s_ircReply	  replyInfo = {2, RPL_WELCOME, client.getNickname(), client.getNickname() + "!", errorMessages.at(replyInfo.errorCode) };
@@ -124,7 +122,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 	// √ check if command's parameters exist if not set username to unknown
 	// √ parse the content
 	// √ set the username
-	// * handle the server and host names
+	// √ handle the server and host names
 
 	if (!client.getStatus().authenticated || client.getStatus().registered){
 		if (!client.getStatus().authenticated){
@@ -164,7 +162,6 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		if (client.getStatus().nick){
 			client.setStatus("registered", true);
 		}
-		// messageToClient(client, "User accepted");
 		if (client.getStatus().registered){
 			client.setStatus("connected", true);
 			s_ircReply	  replyInfo = {2, RPL_WELCOME, client.getNickname(), client.getNickname() + "!", errorMessages.at(replyInfo.errorCode) };
@@ -221,10 +218,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 						  "!~" + client.getUsername()  +
 						  "@"  + client.getIpAddress() +
 						  " "  + "JOIN" + " " + (*it)->getChannelName();
-				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i){
-					if ((*it)->getChannelClients().at(i)->getNickname() != client.getNickname())
-						messageToClient(*(*it)->getChannelClients().at(i), message);
-				}
+				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i)
+					messageToClient(*(*it)->getChannelClients().at(i), message);
 			}
 			return ;
 		}
@@ -246,7 +241,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	//TODO:
 	// √ check if not REGISTERED
 	// √ check msg destination
-	// * check text msg validity
+	// √ check text msg validity
 
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
@@ -314,7 +309,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 				if (!n){
 					s_ircReply	  replyInfo = {1, ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
 					messageToClient(client, replyGenerator(replyInfo));
-					// privmsgInput.targets.pop();
 				}
 			}
 			if (!privmsgInput.targets.empty())

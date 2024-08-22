@@ -11,8 +11,8 @@ bool	isValidChannelName( std::string& channelName ){
 }
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
-//TODO
-//replace errors with their numerical values
+
+//				  :::Messaging:::
 bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privmsgInput, Client& client ){
 	if (arguments.empty() || arguments.size() < 2){
 		if (arguments.size() < 2){
@@ -33,10 +33,30 @@ bool	privmsgAnalyser( std::vector<std::string> arguments, s_prvMsgCommand& privm
 	privmsgInput.message = arguments.at(1);
 	if (privmsgInput.message.at(0) == ':')
 		privmsgInput.message = privmsgInput.message.substr(1, privmsgInput.message.size() - 1);
-
 	return (true);
 }
 
+//Used to generate replies from server to client
+std::string	  replyGenerator( s_ircReply replyInfo ){
+	std::string	  reply;
+
+	//sender + target + message
+	if (replyInfo.type == 1){
+		reply = ":ircserv " + intToString(replyInfo.errorCode) + " "
+							+ replyInfo.sender + " "
+							+ replyInfo.target + " "
+							+ ":" + replyInfo.message + "\n";
+	}
+	//sender + message
+	else if (replyInfo.type == 2) {
+		reply = ":ircserv " + intToString(replyInfo.errorCode) + " " + replyInfo.sender + " "
+							+ ":" + replyInfo.message + " "
+							+ replyInfo.target + "\n";
+	}
+	return (reply);
+}
+
+//Used to send replies from server to client
 bool	messageToClient( Client& target, std::string message){
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
@@ -46,13 +66,11 @@ bool	messageToClient( Client& target, std::string message){
 	return (true);
 }
 
-
+//Used to send messages from client to client
 bool	messageToClient( s_messageInfo messageInfo ){
 	if (messageInfo.message.at(messageInfo.message.size() - 1) != '\n')
 		messageInfo.message += '\n';
 
-	// if (messageInfo.sender == messageInfo.receiver)
-	// 	return (false);
 	//Formating the sender in the message
 	messageInfo.message = ":"  + messageInfo.sender->getNickname()  +
 						  "!~" + messageInfo.sender->getUsername()  +
@@ -64,6 +82,7 @@ bool	messageToClient( s_messageInfo messageInfo ){
 	return (true);
 }
 
+//Used to send messages from client to channel
 bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Checking if the user is part of the channel
 	std::vector<std::string>::iterator it = std::find(sender.channels.begin(), sender.channels.end(), target.getChannelName());
@@ -90,36 +109,13 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 
 	return (true);
 }
+
 bool	trailingCheck( std::vector<std::string> arguments ){
 	for (size_t i = 0; i < arguments.size(); ++i){
 		if (arguments.at(0).at(0) == ':')
 			return (true);
 	}
 	return (false);
-}
-
-std::string	  replyGenerator( s_ircReply replyInfo ){
-	std::string	  reply;
-
-	//sender + target + message
-	if (replyInfo.type == 1){
-		reply = ":ircserv " + intToString(replyInfo.errorCode) + " "
-							+ replyInfo.sender + " "
-							+ replyInfo.target + " "
-							+ ":" + replyInfo.message + "\n";
-	}
-	//sender + message
-	else if (replyInfo.type == 2) {
-		reply = ":ircserv " + intToString(replyInfo.errorCode) + " " + replyInfo.sender + " "
-							+ ":" + replyInfo.message + " "
-							+ replyInfo.target + "\n";
-	}
-	return (reply);
-}
-
-std::string	  replyGenerator( IrcErrors errorCode, const std::string& sender, const std::string& target){
-	return (":ircserv " + intToString(errorCode) + " " + sender + " "
-			+ target + " :" + errorMessages.at(errorCode) + " \r\n"); 
 }
 
 //::::::::::::::::::General:::::::::::::::::::::::::
@@ -136,6 +132,7 @@ void compareStrings(const std::string& str1, const std::string& str2) {
     }
 }
 
+//Chaneges int to std::string while filling the empty spaces (potentially 2) with zeros
 std::string intToString(int value) {
     std::ostringstream oss;
     oss << std::setw(3) << std::setfill('0') << value;

@@ -3,10 +3,10 @@
 
 //::::::::::::::::::Client::::::::::::::::::::::::
 			/*~~~Client Status~~~*/
-# define OFFLINE		0
-# define ONLINE			1
-# define AUTHENTICATED	2
-# define REGISTERED		3
+// # define OFFLINE		0
+// # define ONLINE			1
+// # define AUTHENTICATED	2
+// # define REGISTERED		3
 
 //::::::::::::::::::Colors:::::::::::::::::::::::::
 # define BLACK  		"\033[0;30m"
