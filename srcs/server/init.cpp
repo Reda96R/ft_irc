@@ -38,6 +38,7 @@ bool initialize_server(int argc, char **argv, ServerInfo &server_info)
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
     server_info.serv_addr = serv_addr;
+	server_info.servIpAddress = inet_ntoa(server_info.serv_addr.sin_addr);
 
     if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {

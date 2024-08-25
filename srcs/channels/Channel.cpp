@@ -65,6 +65,31 @@ std::vector<Client*> Channel::getChannelClients() const {
     return this->channelClients;
 }
 
+std::vector<Client*> Channel::getChannelOperators() const {
+    return this->channelOperators;
+}
+
+std::string	  Channel::getChannelClientsList() const {
+	std::string				clientsList;
+	std::vector<Client*>	clients = this->getChannelClients();
+	std::vector<Client*>	operators = this->getChannelOperators();
+
+	size_t	  i = 0;
+	if (!clients.empty())
+		clientsList += clients[i++]->getNickname();
+
+	if (clients.size() > 1)
+		while (clients[i])
+			clientsList += " " + clients[i++]->getNickname();
+
+	i = 0;
+	if (!operators.empty())
+		clientsList += operators[i++]->getNickname();
+	while (operators[i])
+		clientsList += " @" + operators[i++]->getNickname();
+	return (clientsList);
+}
+
 // SETTERS
 
 void Channel::setChannelName(Client &me, std::string& channelName) {

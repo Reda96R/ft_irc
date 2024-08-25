@@ -213,24 +213,65 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 			// if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end()){
 				(*it)->addClient(client);
 				client.channels.push_back((*it)->getChannelName());
-
-				std::string message = ":"  + client.getNickname()  +
+				
+				std::string	  message = ":"  + client.getNickname()  +
 						  "!~" + client.getUsername()  +
 						  "@"  + client.getIpAddress() +
-						  " "  + "JOIN" + " " + (*it)->getChannelName();
+						  " "  + "JOIN" + " " + (*it)->getChannelName() + "\n";
 				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i)
 					messageToClient(*(*it)->getChannelClients().at(i), message);
+
+				message = ":"                         +
+				client.getNickname()                  +
+				"!~" + client.getUsername()           +
+				"@"  + serverInfo.servIpAddress       +
+				" 353 "  + client.getNickname()       +
+				" = " + (*it)->getChannelName()       +
+				" :" + (*it)->getChannelClientsList() +
+				"\n";
+				messageToClient(client, message);
+
+				message = ":"  + serverInfo.servIpAddress   +
+				" 366 "  + client.getNickname()   +
+				"  " + (*it)->getChannelName()  +
+				" :End of /NAMES list.\n";
+				messageToClient(client, message);
 			}
 			return ;
 		}
 	}
 
+
+
+
 	// Create the channel
 	Channel *channel = new Channel(channelName);
 	serverInfo.channels.push_back(channel);
+	channel->addOperator(client);
+	std::string message = ":"  + client.getNickname()  +
+			  "!~" + client.getUsername()  +
+			  "@"  + client.getIpAddress() +
+			  " "  + "JOIN" + " " + channel->getChannelName() + "\n";
+	messageToClient(client, message);
+
+	message = ":"  + client.getNickname()       +
+			  "!~" + client.getUsername()       +
+			  "@"  + serverInfo.servIpAddress   +
+			  " 353 "  + client.getNickname()   +
+			  " = " + channel->getChannelName() +
+			  " :" + "@" + client.getNickname() +
+			  "\n";
+	messageToClient(client, message);
+
+	message = ":"  + serverInfo.servIpAddress   +
+			  " 366 "  + client.getNickname()   +
+			  "  " + channel->getChannelName()  +
+			  " :End of /NAMES list.\n";
+	messageToClient(client, message);
+
 		// std::cout << GREEN << "Channel created" << RESET << std::endl;
 	// Add the client to the channel
-	channel->addClient(client);
+	// channel->addClient(client);
 	client.channels.push_back(channelName);
 		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
 }

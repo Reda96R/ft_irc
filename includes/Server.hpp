@@ -11,6 +11,7 @@
 # include <vector>
 # include "Client.hpp"
 # include "Channel.hpp"
+# include <arpa/inet.h>
 # include "macros.hpp"
 
 struct ServerInfo {
@@ -18,6 +19,7 @@ struct ServerInfo {
     int port;
     std::string password;
     sockaddr_in serv_addr;
+	std::string servIpAddress;
     std::vector<Client*> clients;
     std::vector<Channel*> channels;
 
@@ -25,5 +27,6 @@ struct ServerInfo {
 
 bool initialize_server(int argc, char** argv, ServerInfo &server_info);
 void handlingPolling(ServerInfo& server_info, std::vector<pollfd>& fds, std::vector<Client*>& clients);
+
 
 #endif

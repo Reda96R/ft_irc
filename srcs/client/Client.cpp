@@ -2,7 +2,6 @@
 #include "../../includes/Server.hpp"
 #include "../../includes/macros.hpp"
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <sstream>
 #include <stdio.h>
 

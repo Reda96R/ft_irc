@@ -36,9 +36,11 @@ class Channel {
         ~Channel();
 
         // GETTERS
-        std::string getChannelName() const;
-        std::string getChannelTopic() const;
-        std::vector<Client*> getChannelClients() const;
+        std::string			  getChannelName() const;
+        std::string			  getChannelTopic() const;
+        std::vector<Client*>  getChannelClients() const;
+        std::vector<Client*>  getChannelOperators() const;
+		std::string			  getChannelClientsList() const;
 
         // SETTERS
         void setChannelName(Client &me, std::string& channelName);
