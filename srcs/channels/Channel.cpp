@@ -4,6 +4,7 @@
 
 // USELESS CANONICAL FORM
 Channel::Channel(void) {
+
 }
 
 Channel::Channel(const Channel& other) {
@@ -67,14 +68,14 @@ std::vector<Client*> Channel::getChannelClients() const {
 // SETTERS
 
 void Channel::setChannelName(Client &me, std::string& channelName) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end())
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end())
         this->channelName = channelName;
     else
         return ;
 }
 
 void Channel::setChannelTopic(Client &me, std::string& channelTopic) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end())
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end())
         this->channelTopic = channelTopic;
     else
         return ;
@@ -84,38 +85,41 @@ void Channel::addClient(Client &me) {
     this->channelClients.push_back(&me);
 }
 
-//TODO: fix the pointer issue
-// void Channel::removeClient(Client &me) {
-//     this->channelClients.erase(std::remove(this->channelClients.begin(), this->channelClients.end(), me), this->channelClients.end());
-// }
-
+void Channel::removeClient(Client &m) {
+    Client *me = &m;
+    for (size_t i = 0; i < this->channelClients.size(); ++i) {
+        if (this->channelClients[i] == me) {
+            this->channelClients.erase(this->channelClients.begin() + i);
+            break;
+        }
+    }
+}
 void Channel::addOperator(Client &me) {
-    this->channelOperators.push_back(me);
+    this->channelOperators.push_back(&me);
 }
 
 void Channel::removeOperator(Client &me) {
-    this->channelOperators.erase(std::remove(this->channelOperators.begin(), this->channelOperators.end(), me), this->channelOperators.end());
+    this->channelOperators.erase(std::remove(this->channelOperators.begin(), this->channelOperators.end(), &me), this->channelOperators.end());
 }
 
 void Channel::AddInvitedUser(Client &me) {
-    this->invitedUsers.push_back(me);
+    this->invitedUsers.push_back(&me);
 }
 
 void Channel::removeInvitedUser(Client &me) {
-    this->invitedUsers.erase(std::remove(this->invitedUsers.begin(), this->invitedUsers.end(), me), this->invitedUsers.end());
+    this->invitedUsers.erase(std::remove(this->invitedUsers.begin(), this->invitedUsers.end(), &me), this->invitedUsers.end());
 }
 
 // METHODS
 
 void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string& user) {
-    (void) me;
     // i need a the list of USERS in the server
     if (this->channelInviteOnly == false)
         return ;
 
     // check if the client has the right to invite users
     // if not return ;
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) == this->channelOperators.end())
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) == this->channelOperators.end())
         return ;
 
     // check if the string provided is a valid nickname
@@ -132,77 +136,75 @@ void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string&
     if (client_requested == NULL)
         return ;
 
-	//TODO: fix the pointer issue
     // check if the user is already in the channel
-    // if (std::find(this->channelClients.begin(), this->channelClients.end(), *client_requested) != this->channelClients.end())
-    //     return ;
-    
+    if (std::find(this->channelClients.begin(), this->channelClients.end(), client_requested) != this->channelClients.end())
+        return ;
+
     // check if the user is already invited
-    if (std::find(this->invitedUsers.begin(), this->invitedUsers.end(), *client_requested) != this->invitedUsers.end())
+    if (std::find(this->invitedUsers.begin(), this->invitedUsers.end(), client_requested) != this->invitedUsers.end())
         return ;
 
     // add the user to the invited list
-    this->invitedUsers.push_back(*client_requested);
-    
-
-    // for each user in the server
-    // iterates over them all, 
-        // if any of the user nicknames matches the one provided above
-            // send a private message in this format : "Invitation to ($server_name) from ($client_who_sent_request->name)"
-        // else
-            // return ;
-
-
+    this->invitedUsers.push_back(client_requested);
+    // send a private message to the user -- REDA
 }
 
+void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& user) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) == this->channelOperators.end())
+        return ;
 
-// void Channel::kickUser(Client &me, std::string& user) {
-//     std::vector<Client>::iterator it = this->channelOperators.begin();
-//     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
-//         while (it != this->channelClients.end()) {
-//             if (it->getNickname() == user) {
-//                 this->channelClients.erase(it);
-//                 return ;
-//             }
-//             it++;
-//         }
-//     }
-//     else
-//         return ;
-// }
-//
-// void Channel::makeOperator(Client &me, std::string& user) {
-//     std::vector<Client>::iterator it = this->channelOperators.begin();
-//     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
-//         while (it != this->channelClients.end()) {
-//             if (it->getNickname() == user) {
-//                 this->channelOperators.push_back(*it);
-//                 return ;
-//             }
-//             it++;
-//         }
-//     }
-//     else
-//         return ;
-// }
-//
-// void Channel::removeOperator(Client &me, std::string& user) {
-//     std::vector<Client>::iterator it = this->channelOperators.begin();
-//     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
-//         while (it != this->channelClients.end()) {
-//             if (it->getNickname() == user) {
-//                 this->channelOperators.erase(it);
-//                 return ;
-//             }
-//             it++;
-//         }
-//     }
-//     else
-//         return ;
-// }
+    Client *kick = NULL;
+    for (std::vector<Client*>::iterator it = serverInfo.clients.begin(); it < serverInfo.clients.end(); it++) {
+        if ((*it)->getNickname() == user) {
+            kick = *it;
+            break ;
+        }
+    }
+
+    if (kick == NULL)
+        return ;
+
+    this->channelClients.erase(std::remove(this->channelClients.begin(), this->channelClients.end(), kick), this->channelClients.end());
+    this->channelOperators.erase(std::remove(this->channelOperators.begin(), this->channelOperators.end(), kick), this->channelOperators.end());
+    this->invitedUsers.erase(std::remove(this->invitedUsers.begin(), this->invitedUsers.end(), kick), this->invitedUsers.end());
+}
+
+void Channel::makeOperator(Client &me, std::string& user) {
+    // check if we have the right to make someone an operator
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) == this->channelOperators.end())
+        return ;
+    // check if the user is in the channel
+    Client *op = NULL;
+    for (std::vector<Client*>::iterator it = this->channelClients.begin(); it < this->channelClients.end(); it++) {
+        if ((*it)->getNickname() == user) {
+            op = *it;
+            break ;
+        }
+    }
+    // add the user to the operators list
+    if (op != NULL)
+        this->channelOperators.push_back(op);
+}
+
+void Channel::removeOperator(Client &me, std::string& user) {
+    // check if we have the right to remove someone from the operators
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) == this->channelOperators.end())
+        return ;
+    // check if the user is in the operators list
+    Client *op = NULL;
+    for (std::vector<Client*>::iterator it = this->channelOperators.begin(); it < this->channelOperators.end(); it++) {
+        if ((*it)->getNickname() == user) {
+            op = *it;
+            break ;
+        }
+    }
+    // remove the user from the operators list
+    if (op != NULL)
+        this->channelOperators.erase(std::remove(this->channelOperators.begin(), this->channelOperators.end(), op), this->channelOperators.end());
+}
 
 void Channel::setChannelPassword(Client &me, std::string& password) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelPasswordProtected = true;
         this->channelPassword = password;
     }
@@ -211,7 +213,7 @@ void Channel::setChannelPassword(Client &me, std::string& password) {
 }
 
 void Channel::removeChannelPassword(Client &me) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelPasswordProtected = false;
         this->channelPassword = "";
     }
@@ -220,7 +222,7 @@ void Channel::removeChannelPassword(Client &me) {
 }
 
 void Channel::setChannelInviteOnly(Client &me) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelInviteOnly = true;
     }
     else
@@ -228,7 +230,7 @@ void Channel::setChannelInviteOnly(Client &me) {
 }
 
 void Channel::removeChannelInviteOnly(Client &me) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelInviteOnly = false;
     }
     else
@@ -236,7 +238,7 @@ void Channel::removeChannelInviteOnly(Client &me) {
 }
 
 void Channel::setChannelUserLimit(Client &me, ssize_t limit) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->userLimitOnOff = true;
         this->userLimit = limit;
     }
@@ -245,7 +247,7 @@ void Channel::setChannelUserLimit(Client &me, ssize_t limit) {
 }
 
 void Channel::removeChannelUserLimit(Client &me) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), me) != this->channelOperators.end()) {
+    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->userLimitOnOff = false;
         this->userLimit = 0;
     }

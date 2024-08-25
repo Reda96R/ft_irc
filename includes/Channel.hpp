@@ -17,8 +17,8 @@ class Channel {
 
         // CLIENTS IN CHANNEL
         std::vector<Client*> channelClients;
-        std::vector<Client> channelOperators;
-        std::vector<Client> invitedUsers;
+        std::vector<Client*> channelOperators;
+        std::vector<Client*> invitedUsers;
 
         // MODES
         bool channelPasswordProtected;
@@ -53,7 +53,7 @@ class Channel {
 
         // METHODS
         void inviteUser(Client &me, struct ServerInfo& serverInfo, std::string& user);
-        void kickUser(Client &me, std::string& user);
+        void kickUser(Client &me, struct ServerInfo& serverInfo, std::string& user);
 
         void makeOperator(Client &me, std::string& user);
         void removeOperator(Client &me, std::string& user);
