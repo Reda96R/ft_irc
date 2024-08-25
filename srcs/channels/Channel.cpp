@@ -74,19 +74,27 @@ std::string	  Channel::getChannelClientsList() const {
 	std::vector<Client*>	clients = this->getChannelClients();
 	std::vector<Client*>	operators = this->getChannelOperators();
 
-	size_t	  i = 0;
-	if (!clients.empty())
-		clientsList += clients[i++]->getNickname();
+	std::vector<Client*>::iterator it = clients.begin();
+	if (it != clients.end()){
+		// if (this->getChannelOperators().find((*it)->getNickname))
+		clientsList += (*it)->getNickname();
+		++it;
+	}
 
-	if (clients.size() > 1)
-		while (clients[i])
-			clientsList += " " + clients[i++]->getNickname();
+	while (it != clients.end()){
+		clientsList += " " + (*it)->getNickname();
+		++it;
+	}
 
-	i = 0;
-	if (!operators.empty())
-		clientsList += operators[i++]->getNickname();
-	while (operators[i])
-		clientsList += " @" + operators[i++]->getNickname();
+	it = operators.begin();
+	if (clientsList.empty() && it != operators.end()){
+		clientsList += " @" + (*it)->getNickname();
+		++it;
+	}
+	while (it != operators.end()){
+		clientsList += " @" + (*it)->getNickname();
+		++it;
+	}
 	return (clientsList);
 }
 

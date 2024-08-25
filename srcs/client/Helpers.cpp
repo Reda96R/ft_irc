@@ -41,7 +41,7 @@ std::string	  replyGenerator( s_ircReply replyInfo ){
 	std::string	  reply;
 
 	//sender + target + message
-	if (replyInfo.type == 1){
+	if (replyInfo.type == 1) {
 		reply = ":ircserv " + intToString(replyInfo.errorCode) + " "
 							+ replyInfo.sender + " "
 							+ replyInfo.target + " "
@@ -52,6 +52,12 @@ std::string	  replyGenerator( s_ircReply replyInfo ){
 		reply = ":ircserv " + intToString(replyInfo.errorCode) + " " + replyInfo.sender + " "
 							+ ":" + replyInfo.message + " "
 							+ replyInfo.target + "\n";
+	}
+	else {
+		reply = ":ircserv " + intToString(replyInfo.errorCode) + " "
+							+ replyInfo.sender + " "
+							+ replyInfo.target + " "
+							+ replyInfo.message + "\n";
 	}
 	return (reply);
 }
@@ -96,6 +102,18 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 		message += '\n';
 
 	//Broadcasting the message
+	//Operators
+	for (size_t i = 0; i < target.getChannelOperators().size() ; ++i){
+		if (target.getChannelOperators()[i]->getNickname() != sender.getNickname()){
+			s_messageInfo messageInfo = {target.getChannelName(), &sender,
+										target.getChannelOperators()[i], message};
+			if (!messageToClient(messageInfo)){
+				std::cout << RED << "Send failure" << RESET << std::endl;
+				return (false);
+			}
+		}
+	}
+	//Clients
 	for (size_t i = 0; i < target.getChannelClients().size() ; ++i){
 		if (target.getChannelClients()[i]->getNickname() != sender.getNickname()){
 			s_messageInfo messageInfo = {target.getChannelName(), &sender,

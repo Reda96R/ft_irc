@@ -4,6 +4,8 @@ std::map<IrcErrors, std::string> errorMessages;
 
 void initializeErrorMessages() {
     errorMessages[RPL_WELCOME]			= "Welcome to the Internet Relay Network";
+    errorMessages[RPL_NOTOPIC]			= "No topic is set";
+    errorMessages[RPL_TOPIC]			= "";
     errorMessages[ERR_NOSUCHNICK]		= "No such nick/channel";
     errorMessages[ERR_NOSUCHCHANNEL]	= "No such channel";
     errorMessages[ERR_CANNOTSENDTOCHAN] = "Cannot send to channel";

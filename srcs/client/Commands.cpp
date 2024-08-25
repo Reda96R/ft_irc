@@ -218,11 +218,21 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 						  "!~" + client.getUsername()  +
 						  "@"  + client.getIpAddress() +
 						  " "  + "JOIN" + " " + (*it)->getChannelName() + "\n";
+				// for (size_t i = 0; i < (*it)->getChannelOperators().size(); ++i)
+				// 	messageToClient(*(*it)->getChannelOperators().at(i), message);
 				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i)
 					messageToClient(*(*it)->getChannelClients().at(i), message);
 
-				message = ":"                         +
-				client.getNickname()                  +
+				if ((*it)->getChannelTopic().empty()){
+					s_ircReply	  replyInfo = {3, RPL_NOTOPIC, client.getNickname(), (*it)->getChannelName() , ":" + errorMessages.at(replyInfo.errorCode) };
+					messageToClient(client, replyGenerator(replyInfo));
+				}
+				else{
+					s_ircReply	  replyInfo = {3, RPL_TOPIC, client.getNickname(), (*it)->getChannelName() , ":" + (*it)->getChannelTopic() };
+					messageToClient(client, replyGenerator(replyInfo));
+				}
+
+				message = ":" + client.getNickname()  +
 				"!~" + client.getUsername()           +
 				"@"  + serverInfo.servIpAddress       +
 				" 353 "  + client.getNickname()       +
