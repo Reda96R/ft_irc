@@ -51,10 +51,17 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 
 	// Checking the availability of the command
 	t_commandsMap::iterator it = commandsMap.find(client.getInput().command);
+
+	// if (client.getInput().command == "QUIT"){
+	// 	std::cout << "QUIT" << std::endl;
+	// 	void (Commands::*cmd)(Client&, struct ServerInfo&) = it->second;
+	// 	(commands.*cmd)(client, serverInfo);
+	// 	return (false);
+	// }
 	if (it == commandsMap.end()){
 		s_ircReply	  replyInfo = {1, ERR_UNKNOWNCOMMAND, client.getNickname(), client.getInput().command, errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
-		return (false);
+		return (true);
 	}
 	position = input.find_first_not_of(' ', commandEnd);
 	if (position == std::string::npos)

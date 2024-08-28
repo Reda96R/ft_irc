@@ -198,8 +198,10 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 		std::stringstream iss(message);
 		std::string		  tmp;
 
-		while (getline(iss, tmp))
-			commandParser(tmp, *this, serverInfo);
+		while (getline(iss, tmp)){
+			if (!commandParser(tmp, *this, serverInfo))
+				return (false);
+		}
 	}
 	return (true);
 }
