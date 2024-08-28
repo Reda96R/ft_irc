@@ -180,6 +180,8 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
     std::string		message;
 
     ret = recv(this->getSocket(), buf, sizeof(buf), 0);
+ //    buf[ret] = '\0';
+	// std::cout << "-->" << buf << std::endl;
 	if (ret == -1){
         perror("recv");
 		return (false);

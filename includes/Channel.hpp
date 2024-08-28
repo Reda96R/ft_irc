@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <vector>
+# include <map>
 # include <string>
 # include <algorithm>
 # include "Client.hpp"
@@ -18,6 +19,8 @@ class Channel {
         // CLIENTS IN CHANNEL
         std::vector<Client*> channelClients;
         std::vector<Client*> channelOperators;
+        std::map<std::string, Client*> channelClientsMap;
+        std::map<std::string, Client*> channelOperatorsMap;
         std::vector<Client*> invitedUsers;
 
         // MODES

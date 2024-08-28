@@ -89,7 +89,11 @@ bool	commandParser( std::string& input, Client& client, struct ServerInfo& serve
 	// for (size_t i = 0; i < client.getInput().arguments.size(); ++i){
 	// 	std::cout << CYAN << "args ---> " << client.getInput().arguments[i] << RESET << std::endl;
 	// }
-	
+
+	// if (client.getInput().command == "QUIT"){
+	// 	return (false);
+	// }
+
 	// Command execution
 	void (Commands::*cmd)(Client&, struct ServerInfo&) = it->second;
 	(commands.*cmd)(client, serverInfo);

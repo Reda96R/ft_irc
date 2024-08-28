@@ -78,15 +78,18 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
+
 	else if (client.getInput().arguments.size() < 2)
 	{
-		for (size_t i = 0; i < serverInfo.clients.size(); ++i){
-			if (client.getInput().arguments.at(0) == serverInfo.clients.at(i)->getNickname()){
-				s_ircReply	  replyInfo = {1, ERR_NICKNAMEINUSE, serverInfo.clients.at(i)->getNickname(), "", errorMessages.at(replyInfo.errorCode) };
-				messageToClient(client, replyGenerator(replyInfo));
-				return ;
-			}
+		std::map<std::string, Client*>::iterator it;
+		it = serverInfo.clientsMap.find(client.getInput().arguments.at(0));
+
+		if (it != serverInfo.clientsMap.end()){
+			s_ircReply	  replyInfo = {1, ERR_NICKNAMEINUSE, it->second->getNickname(), "", errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+			return ;
 		}
+
 		if (client.getInput().arguments.at(0).length() > 9)
 			return ;
 
@@ -110,13 +113,14 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		}
 		if (client.getStatus().registered){
 			client.setStatus("connected", true);
+			serverInfo.clientsMap[client.getNickname()] = &client;
 			s_ircReply	  replyInfo = {2, RPL_WELCOME, client.getNickname(), client.getNickname() + "!", errorMessages.at(replyInfo.errorCode) };
 			messageToClient(client, replyGenerator(replyInfo));
 		}
 	}
 }
 
-void	Commands::userCommand( Client& client, struct ServerInfo& ){
+void	Commands::userCommand( Client& client, struct ServerInfo& serverInfo ){
 	//TODO:
 	// √ check if authenticated
 	// √ check if already registered
@@ -165,6 +169,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& ){
 		}
 		if (client.getStatus().registered){
 			client.setStatus("connected", true);
+			serverInfo.clientsMap[client.getNickname()] = &client;
 			s_ircReply	  replyInfo = {2, RPL_WELCOME, client.getNickname(), client.getNickname() + "!", errorMessages.at(replyInfo.errorCode) };
 			messageToClient(client, replyGenerator(replyInfo));
 		}
@@ -208,82 +213,86 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	}
 
 	// Check if the channel already exists
-	for (std::vector<Channel*>::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); it++){
+	std::map<std::string, Channel*>::iterator	it = serverInfo.channels.find(channelName);
+	if (it != serverInfo.channels.end()){
 		// Check if client is part of the channel
-		if ((*it)->getChannelName() == channelName){
-			std::map<std::string, Channel*> channels = client.getChannels();
-			if (channels.find(channelName) == channels.end()){
-				// Add client to channel
-				(*it)->addClient(client);
-				client.channelAdd(*(*it));
-				
-				std::string	  message = ":"  + client.getNickname()  +
-						  "!~" + client.getUsername()  +
-						  "@"  + client.getIpAddress() +
-						  " "  + "JOIN" + " " + (*it)->getChannelName() + "\n";
-				for (size_t i = 0; i < (*it)->getChannelOperators().size(); ++i)
-					messageToClient(*(*it)->getChannelOperators().at(i), message);
-				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i)
-					messageToClient(*(*it)->getChannelClients().at(i), message);
+		std::map<std::string, Channel*> channels = client.getChannels();
+		if (channels.find(channelName) == channels.end()){
+			// Add client to channel
+			it->second->addClient(client);
+			client.channelAdd(*it->second);
 
-				if ((*it)->getChannelTopic().empty()){
-					s_ircReply	  replyInfo = {3, RPL_NOTOPIC, client.getNickname(), (*it)->getChannelName() , ":" + errorMessages.at(replyInfo.errorCode) };
-					messageToClient(client, replyGenerator(replyInfo));
-				}
-				else{
-					s_ircReply	  replyInfo = {3, RPL_TOPIC, client.getNickname(), (*it)->getChannelName() , ":" + (*it)->getChannelTopic() };
-					messageToClient(client, replyGenerator(replyInfo));
-				}
+			std::string	  message = ":"  + client.getNickname()  +
+					  "!~" + client.getUsername()  +
+					  "@"  + client.getIpAddress() +
+					  " "  + "JOIN" + " " + it->second->getChannelName() + "\n";
+			for (size_t i = 0; i < it->second->getChannelOperators().size(); ++i)
+				messageToClient(*(it->second)->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < it->second->getChannelClients().size(); ++i)
+				messageToClient(*(it->second)->getChannelClients().at(i), message);
 
-				message = ":" + client.getNickname()  +
-				"!~" + client.getUsername()           +
-				"@"  + serverInfo.servIpAddress       +
-				" 353 "  + client.getNickname()       +
-				" = " + (*it)->getChannelName()       +
-				" :" + (*it)->getChannelClientsList() +
-				"\n";
-				messageToClient(client, message);
-
-				message = ":"  + serverInfo.servIpAddress   +
-				" 366 "  + client.getNickname()   +
-				"  " + (*it)->getChannelName()  +
-				" :End of /NAMES list.\n";
-				messageToClient(client, message);
+			if (it->second->getChannelTopic().empty()){
+				s_ircReply	  replyInfo = {3, RPL_NOTOPIC, client.getNickname(), it->second->getChannelName() , ":" + errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
 			}
+			else{
+				s_ircReply	  replyInfo = {3, RPL_TOPIC, client.getNickname(), it->second->getChannelName() , ":" + it->second->getChannelTopic() };
+				messageToClient(client, replyGenerator(replyInfo));
+			}
+
+			message = ":" + client.getNickname()  +
+			"!~" + client.getUsername()           +
+			"@"  + serverInfo.servIpAddress       +
+			" 353 "  + client.getNickname()       +
+			" = " + it->second->getChannelName()       +
+			" :" + it->second->getChannelClientsList() +
+			"\n";
+			messageToClient(client, message);
+
+			message = ":"  + serverInfo.servIpAddress   +
+			" 366 "  + client.getNickname()   +
+			"  " + it->second->getChannelName()  +
+			" :End of /NAMES list.\n";
+			messageToClient(client, message);
+		}
+		else{
 			return ;
 		}
 	}
+	else{
+		// Create the channel
+		Channel *channel = new Channel(channelName);
+		serverInfo.channels[channelName] = channel;
+		// serverInfo.channels.push_back(channel);
+		//
+		// Add the client as operator
+		channel->addOperator(client);
 
+		std::string message = ":"  + client.getNickname()  +
+				  "!~" + client.getUsername()  +
+				  "@"  + client.getIpAddress() +
+				  " "  + "JOIN" + " " + channel->getChannelName() + "\n";
+		messageToClient(client, message);
 
-	// Create the channel
-	Channel *channel = new Channel(channelName);
-	serverInfo.channels.push_back(channel);
-	// Add the client as operator
-	channel->addOperator(client);
-	std::string message = ":"  + client.getNickname()  +
-			  "!~" + client.getUsername()  +
-			  "@"  + client.getIpAddress() +
-			  " "  + "JOIN" + " " + channel->getChannelName() + "\n";
-	messageToClient(client, message);
+		message = ":"  + client.getNickname()       +
+				  "!~" + client.getUsername()       +
+				  "@"  + serverInfo.servIpAddress   +
+				  " 353 "  + client.getNickname()   +
+				  " = " + channel->getChannelName() +
+				  " :" + "@" + client.getNickname() +
+				  "\n";
+		messageToClient(client, message);
 
-	message = ":"  + client.getNickname()       +
-			  "!~" + client.getUsername()       +
-			  "@"  + serverInfo.servIpAddress   +
-			  " 353 "  + client.getNickname()   +
-			  " = " + channel->getChannelName() +
-			  " :" + "@" + client.getNickname() +
-			  "\n";
-	messageToClient(client, message);
-
-	message = ":"  + serverInfo.servIpAddress   +
-			  " 366 "  + client.getNickname()   +
-			  "  " + channel->getChannelName()  +
-			  " :End of /NAMES list.\n";
-	messageToClient(client, message);
+		message = ":"  + serverInfo.servIpAddress   +
+				  " 366 "  + client.getNickname()   +
+				  "  " + channel->getChannelName()  +
+				  " :End of /NAMES list.\n";
+		messageToClient(client, message);
 
 		// std::cout << GREEN << "Channel created" << RESET << std::endl;
-	client.channelAdd(*channel);
+		client.channelAdd(*channel);
 		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
+	}
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -317,47 +326,34 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 		while (!privmsgInput.targets.empty()){
 			/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
-				bool	n = false;
-				for (size_t i = 0; i < serverInfo.channels.size(); ++i){
-					if (serverInfo.channels.at(i)->getChannelName() == privmsgInput.targets.top()){
-						//√ Channel exists √
-						if (messageToChannel(*serverInfo.channels.at(i), client, privmsgInput.message)){
-							n = true;
-							break ;
-						}
-						// else
-							//display send() error if (!messageToChannel)
+				std::map<std::string, Channel*>::iterator	it;
+				it = serverInfo.channels.find(privmsgInput.targets.top());
+				if (it != serverInfo.channels.end()){
+					//√ Channel exists √
+					if (!messageToChannel(*it->second, client, privmsgInput.message)){
+						//display send() error if (!messageToChannel)
 					}
 				}
-				//X Channel doesn't exist X
-				if (!n){
+				else{
 					s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
 					messageToClient(client, replyGenerator(replyInfo));
 				}
 			}
-
 			/* ~~~message to client~~~ */
 			else {
-				bool	n = false;
-				for (size_t i = 0; i < serverInfo.clients.size(); ++i){
-					if (serverInfo.clients.at(i)->getNickname() == privmsgInput.targets.top()){
-						//√ Client exists √
-						if (&client == serverInfo.clients.at(i)){
-							n = true;
-							break ;
+				std::map<std::string, Client*>::iterator	it;
+				it = serverInfo.clientsMap.find(privmsgInput.targets.top());
+				if (it != serverInfo.clientsMap.end()){
+					if (client.getNickname() != it->second->getNickname()){
+						s_messageInfo messageInfo = {it->second->getNickname(),
+													&client, it->second, privmsgInput.message};
+						if (!messageToClient(messageInfo)){
+							//display send() error if (!messageToCient)
 						}
-						s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i),
-									  privmsgInput.message};
-						if (messageToClient(messageInfo)){
-							n = true;
-							break ;
-						}
-						// else
-							//display send() error if (!messageToClient)
 					}
 				}
 				//X Client doesn't exist X
-				if (!n){
+				else{
 					s_ircReply	  replyInfo = {1, ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
 					messageToClient(client, replyGenerator(replyInfo));
 				}
@@ -379,6 +375,8 @@ void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
 	send(client.getPollFd(), message.c_str(), message.length(), 0);
 }
 
+#include <sys/socket.h>
+
 void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 	(void)serverInfo;
 	if (!client.getStatus().registered){
@@ -386,15 +384,26 @@ void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
-	client.setStatus("connected", false);
-	std::string message = "ERROR :Closing Link: " + client.getInput().arguments.at(0) + "!\n";
-	send(client.getPollFd(), message.c_str(), message.length(), 0);
+
+	// client.setStatus("connected", false);
+	// std::string message = "ERROR :Closing Link: " + client.getInput().arguments.at(0) + "!\n";
+	// send(client.getPollFd(), message.c_str(), message.length(), 0);
 
 	std::map<std::string, Channel*> channels = client.getChannels();
 	std::map<std::string, Channel*>::iterator it;
 	for (it = channels.begin() ; it != channels.end(); ++it){
+		it->second->removeClient(client);
 		client.channelRemove(it->first);
 	}
+
+	// serverInfo.clientsMap.erase(serverInfo.clientsMap.find(client.getNickname()));
+	// std::vector<Client*>::iterator ite;
+	// for (ite = serverInfo.clients.begin(); ite != serverInfo.clients.end(); ++ite){
+	// 	if (*ite == &client){
+	// 		serverInfo.clients.erase(ite);
+	// 	}
+	// }
+	//
 }
 
 			/* ~~~channel commands ~~~ */

@@ -21,7 +21,9 @@ struct ServerInfo {
     sockaddr_in serv_addr;
 	std::string servIpAddress;
     std::vector<Client*> clients;
-    std::vector<Channel*> channels;
+    // std::vector<Channel*> channels;
+    std::map<std::string, Client*> clientsMap;
+    std::map<std::string, Channel*> channels;
 
 };
 
