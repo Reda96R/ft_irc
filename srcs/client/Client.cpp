@@ -32,6 +32,10 @@ Client& Client::operator=( const Client& rhs ){
 }
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
+std::map<std::string, Channel*>	  Client::getChannels( void ){
+	return (this->channels);
+}
+
 struct s_status Client::getStatus( void ) const{
 	return (this->clientStatus);
 }
@@ -159,6 +163,14 @@ bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::ve
         clients.push_back(this);
 		
 		return (true);
+}
+
+void	Client::channelAdd( Channel& channel ){
+	this->channels[channel.getChannelName()] = &channel;
+}
+
+void	Client::channelRemove( std::string channelName ){
+	this->channels.erase(this->channels.find(channelName));
 }
 
 // Receives message from clients

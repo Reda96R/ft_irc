@@ -91,8 +91,8 @@ bool	messageToClient( s_messageInfo messageInfo ){
 //Used to send messages from client to channel
 bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Checking if the user is part of the channel
-	std::vector<std::string>::iterator it = std::find(sender.channels.begin(), sender.channels.end(), target.getChannelName());
-	if (it == sender.channels.end()){
+	std::map<std::string, Channel*> channels = sender.getChannels();
+	if (channels.find(target.getChannelName()) == channels.end()){
 		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, sender.getNickname(), target.getChannelName(), errorMessages.at(replyInfo.errorCode) };
 		messageToClient(sender, replyGenerator(replyInfo));
 		return (false);

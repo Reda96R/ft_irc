@@ -4,8 +4,11 @@
 # include <iostream>
 # include <poll.h>
 # include <vector>
+# include <map>
 # include <netinet/in.h>
 # include "Structs.hpp"
+
+class Channel;
 
 class Client {
 	private:
@@ -20,6 +23,8 @@ class Client {
 		std::string				clientIpAddress;
 		struct sockaddr_in		clientAddress;
 
+		std::map<std::string, Channel*> channels;
+
 
 	public:
 		Client( void );
@@ -27,7 +32,6 @@ class Client {
 		Client& operator=( const Client& );
 		~Client( void );
 
-		std::vector<std::string> channels;
 
 		//Comparison operator
 		bool operator==( const Client& ) const;
@@ -46,6 +50,7 @@ class Client {
 		std::string				getRealname( void ) const;
 		std::string				getUsername( void ) const;
 		std::string				getNickname( void ) const;
+		std::map<std::string, Channel*>				getChannels( void );
 
 		void					setSocket( const int& );
 		void					setAddress( struct sockaddr_in&  );
@@ -59,6 +64,8 @@ class Client {
 
 		//::::::::Methods:::::::::::::::
 		bool				clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<struct pollfd>& fds);
+		void				channelAdd( Channel& );
+		void				channelRemove( std::string );
 		// bool				clientRecv( char *recv);
 		// void				clientAdd( void );
 		bool				clientRecv( struct ServerInfo& serverInfo );

@@ -11,6 +11,7 @@ Commands::Commands( void ){
 	this->commandsMap["JOIN"] = &Commands::joinCommand;
 	this->commandsMap["PRIVMSG"] = &Commands::privmsgCommand;
 	this->commandsMap["PING"] = &Commands::pingCommand;
+	this->commandsMap["QUIT"] = &Commands::quitCommand;
 
 			/* ~~~channel commands ~~~ */
 	this->commandsMap["KICK"] = &Commands::kickChannelCommand;
@@ -192,11 +193,11 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	
 	// Check if the trailing is empty
 	// TODO: WTF is this?
-	if (trailingCheck(client.getInput().arguments)){
-		std::cerr << RED << "Trailing is empty" << RESET << std::endl;
+	// if (trailingCheck(client.getInput().arguments)){
+	// 	std::cerr << RED << "Trailing is empty" << RESET << std::endl;
 		// messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
-		return ;
-	}
+	// 	return ;
+	// }
 
 	// Check if the channel name is valid
 	std::string channelName = client.getInput().arguments[0];
@@ -208,18 +209,20 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 
 	// Check if the channel already exists
 	for (std::vector<Channel*>::iterator it = serverInfo.channels.begin(); it < serverInfo.channels.end(); it++){
+		// Check if client is part of the channel
 		if ((*it)->getChannelName() == channelName){
-			if (std::find(client.channels.begin(), client.channels.end(), (*it)->getChannelName()) == client.channels.end()){
-			// if (std::find((*it)->getChannelClients().begin(), (*it)->getChannelClients().end(), client) == (*it)->getChannelClients().end()){
+			std::map<std::string, Channel*> channels = client.getChannels();
+			if (channels.find(channelName) == channels.end()){
+				// Add client to channel
 				(*it)->addClient(client);
-				client.channels.push_back((*it)->getChannelName());
+				client.channelAdd(*(*it));
 				
 				std::string	  message = ":"  + client.getNickname()  +
 						  "!~" + client.getUsername()  +
 						  "@"  + client.getIpAddress() +
 						  " "  + "JOIN" + " " + (*it)->getChannelName() + "\n";
-				// for (size_t i = 0; i < (*it)->getChannelOperators().size(); ++i)
-				// 	messageToClient(*(*it)->getChannelOperators().at(i), message);
+				for (size_t i = 0; i < (*it)->getChannelOperators().size(); ++i)
+					messageToClient(*(*it)->getChannelOperators().at(i), message);
 				for (size_t i = 0; i < (*it)->getChannelClients().size(); ++i)
 					messageToClient(*(*it)->getChannelClients().at(i), message);
 
@@ -252,11 +255,10 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	}
 
 
-
-
 	// Create the channel
 	Channel *channel = new Channel(channelName);
 	serverInfo.channels.push_back(channel);
+	// Add the client as operator
 	channel->addOperator(client);
 	std::string message = ":"  + client.getNickname()  +
 			  "!~" + client.getUsername()  +
@@ -280,9 +282,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	messageToClient(client, message);
 
 		// std::cout << GREEN << "Channel created" << RESET << std::endl;
-	// Add the client to the channel
-	// channel->addClient(client);
-	client.channels.push_back(channelName);
+	client.channelAdd(*channel);
 		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
 }
 
@@ -389,6 +389,12 @@ void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 	client.setStatus("connected", false);
 	std::string message = "ERROR :Closing Link: " + client.getInput().arguments.at(0) + "!\n";
 	send(client.getPollFd(), message.c_str(), message.length(), 0);
+
+	std::map<std::string, Channel*> channels = client.getChannels();
+	std::map<std::string, Channel*>::iterator it;
+	for (it = channels.begin() ; it != channels.end(); ++it){
+		client.channelRemove(it->first);
+	}
 }
 
 			/* ~~~channel commands ~~~ */
