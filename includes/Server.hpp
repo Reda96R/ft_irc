@@ -27,8 +27,9 @@ struct ServerInfo {
 
 };
 
-bool initialize_server(int argc, char** argv, ServerInfo &server_info);
-void handlingPolling(ServerInfo& server_info, std::vector<pollfd>& fds, std::vector<Client*>& clients);
+bool	initialize_server(int argc, char** argv, ServerInfo &server_info);
+void	handlingPolling(ServerInfo& server_info, std::vector<pollfd>& fds, std::vector<Client*>& clients);
+int		commandParser( std::string&, Client&, struct ServerInfo& serverInfo);
 
 
 #endif

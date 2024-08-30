@@ -130,6 +130,8 @@ void	Client::setInput( std::string target, std::string& value ){
 		this->clientInput.command = value;
 	else if (target == "arguments")
 		this->clientInput.arguments.push_back(value);
+	else if (target == "buffer")
+		this->clientInput.buffer = value;
 }
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<pollfd>& fds){
@@ -199,8 +201,15 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 		std::string		  tmp;
 
 		while (getline(iss, tmp)){
-			if (!commandParser(tmp, *this, serverInfo))
-				return (false);
+			this->buffer += tmp;
+			if (!iss.eof()){
+				if (commandParser(this->buffer, *this, serverInfo) < 0){
+					std::cerr << RED << "Client disconnected" << RESET << std::endl;
+					return (false);
+				}
+				this->buffer.clear();
+			}
+			iss.clear();
 		}
 	}
 	return (true);

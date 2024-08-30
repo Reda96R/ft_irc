@@ -74,6 +74,8 @@ bool	messageToClient( Client& target, std::string message){
 
 //Used to send messages from client to client
 bool	messageToClient( s_messageInfo messageInfo ){
+	if (!messageInfo.receiver->getStatus().connected)
+		return (true);
 	if (messageInfo.message.at(messageInfo.message.size() - 1) != '\n')
 		messageInfo.message += '\n';
 
