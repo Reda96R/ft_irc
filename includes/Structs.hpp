@@ -24,6 +24,7 @@ struct s_ircCommand {
 	std::string					  prefix;
 	std::string					  command;
 	std::vector<std::string>	  arguments;
+	std::string					  buffer;
 };
 
 struct s_prvMsgCommand {

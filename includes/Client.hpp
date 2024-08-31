@@ -32,6 +32,9 @@ class Client {
 		Client& operator=( const Client& );
 		~Client( void );
 
+		std::string				buffer;
+
+
 
 		//Comparison operator
 		bool operator==( const Client& ) const;
@@ -76,6 +79,5 @@ class Client {
 
 
 
-bool	commandParser( std::string&, Client&, struct ServerInfo& serverInfo);
 
 #endif // !CLIENT_HPP

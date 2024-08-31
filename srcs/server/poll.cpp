@@ -17,12 +17,11 @@ void handlingPolling(ServerInfo& server_info, std::vector<pollfd>& fds, std::vec
 					if (!clients[i - 1]->clientRecv(server_info)) {
 						fds.erase(fds.begin() + i);
 						close(clients[i - 1]->getPollFd());
-						server_info.clientsMap.erase(clients[i - 1]->getNickname());
 						delete clients[i - 1];
 						clients.erase(clients.begin() + i - 1);
-						for (size_t i = 0; i < clients.size(); ++i){
-							std::cout << "##> " << clients[i]->getNickname() << std::endl; 
-						}
+						// for (size_t i = 0; i < clients.size(); ++i){
+						// 	std::cout << "##> " << clients[i]->getNickname() << std::endl; 
+						// }
 					}
 				}
 			}

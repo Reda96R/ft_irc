@@ -130,6 +130,8 @@ void	Client::setInput( std::string target, std::string& value ){
 		this->clientInput.command = value;
 	else if (target == "arguments")
 		this->clientInput.arguments.push_back(value);
+	else if (target == "buffer")
+		this->clientInput.buffer = value;
 }
 //::::::::::::::::::Methods:::::::::::::::::::::::::
 bool	Client::clientAdd( int serverSocket, std::vector<Client*>& clients, std::vector<pollfd>& fds){
@@ -173,6 +175,16 @@ void	Client::channelRemove( std::string channelName ){
 	this->channels.erase(this->channels.find(channelName));
 }
 
+std::string	  sanitizeInput(std::string input ){
+	std::string	  ret;
+	size_t j = 0;
+	for (size_t i = 0; i < input.size(); ++i){
+		if (input[i] != EOF)
+			ret[j++] = input[i];
+	}
+	return (ret);
+}
+
 // Receives message from clients
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 	int		ret;
@@ -180,8 +192,6 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
     std::string		message;
 
     ret = recv(this->getSocket(), buf, sizeof(buf), 0);
- //    buf[ret] = '\0';
-	// std::cout << "-->" << buf << std::endl;
 	if (ret == -1){
         perror("recv");
 		return (false);
@@ -199,8 +209,15 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 		std::string		  tmp;
 
 		while (getline(iss, tmp)){
-			if (!commandParser(tmp, *this, serverInfo))
-				return (false);
+			this->buffer += tmp;
+			if (!iss.eof()){
+				if (commandParser(this->buffer, *this, serverInfo) < 0){
+					std::cerr << RED << "Client disconnected" << RESET << std::endl;
+					return (false);
+				}
+				this->buffer.clear();
+			}
+			iss.clear();
 		}
 	}
 	return (true);

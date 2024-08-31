@@ -375,8 +375,6 @@ void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
 	send(client.getPollFd(), message.c_str(), message.length(), 0);
 }
 
-#include <sys/socket.h>
-
 void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 	(void)serverInfo;
 	if (!client.getStatus().registered){
@@ -385,25 +383,14 @@ void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 		return ;
 	}
 
-	// client.setStatus("connected", false);
-	// std::string message = "ERROR :Closing Link: " + client.getInput().arguments.at(0) + "!\n";
-	// send(client.getPollFd(), message.c_str(), message.length(), 0);
-
+	client.setStatus("connected", false);
 	std::map<std::string, Channel*> channels = client.getChannels();
 	std::map<std::string, Channel*>::iterator it;
 	for (it = channels.begin() ; it != channels.end(); ++it){
+		messageToChannel(*it->second, client, "QUIT");
 		it->second->removeClient(client);
 		client.channelRemove(it->first);
 	}
-
-	// serverInfo.clientsMap.erase(serverInfo.clientsMap.find(client.getNickname()));
-	// std::vector<Client*>::iterator ite;
-	// for (ite = serverInfo.clients.begin(); ite != serverInfo.clients.end(); ++ite){
-	// 	if (*ite == &client){
-	// 		serverInfo.clients.erase(ite);
-	// 	}
-	// }
-	//
 }
 
 			/* ~~~channel commands ~~~ */
