@@ -175,6 +175,16 @@ void	Client::channelRemove( std::string channelName ){
 	this->channels.erase(this->channels.find(channelName));
 }
 
+std::string	  sanitizeInput(std::string input ){
+	std::string	  ret;
+	size_t j = 0;
+	for (size_t i = 0; i < input.size(); ++i){
+		if (input[i] != EOF)
+			ret[j++] = input[i];
+	}
+	return (ret);
+}
+
 // Receives message from clients
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 	int		ret;
@@ -182,8 +192,6 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
     std::string		message;
 
     ret = recv(this->getSocket(), buf, sizeof(buf), 0);
- //    buf[ret] = '\0';
-	// std::cout << "-->" << buf << std::endl;
 	if (ret == -1){
         perror("recv");
 		return (false);
