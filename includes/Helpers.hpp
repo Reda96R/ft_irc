@@ -24,4 +24,5 @@ void		compareStrings( const std::string& str1, const std::string& str2 );
 
 std::string intToString( int );
 
+void	ircBot( Channel& channel );
 #endif

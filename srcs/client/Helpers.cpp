@@ -1,5 +1,6 @@
 #include "../../includes/Helpers.hpp"
 #include "../../includes/IrcErrors.hpp"
+#include "../../includes/StatBot.hpp"
 
 //::::::::::::::::::Channels:::::::::::::::::::::::::
 bool	isValidChannelName( std::string& channelName ){
@@ -103,6 +104,7 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
 
+
 	//Broadcasting the message
 	//Operators
 	for (size_t i = 0; i < target.getChannelOperators().size() ; ++i){
@@ -125,6 +127,20 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 				return (false);
 			}
 		}
+	}
+
+	if (message == "!statbot\n"){
+		ircBot(target);
+	}
+
+	else{
+		std::map<std::string, int>::iterator it =
+		target.statBot.messagesCount.find(sender.getNickname());
+		if (it != target.statBot.messagesCount.end()){
+			it->second++;
+		}
+		else
+			target.statBot.messagesCount[sender.getNickname()] = 1;
 	}
 
 	return (true);

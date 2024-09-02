@@ -7,6 +7,7 @@
 # include <string>
 # include <algorithm>
 # include "Client.hpp"
+# include "StatBot.hpp"
 
 class Channel {
     private :
@@ -23,6 +24,7 @@ class Channel {
         std::map<std::string, Client*> channelOperatorsMap;
         std::vector<Client*> invitedUsers;
 
+
         // MODES
         bool channelPasswordProtected;
         bool channelInviteOnly;
@@ -33,6 +35,9 @@ class Channel {
         Channel(const Channel& other);
         Channel& operator=(const Channel& other);
     public :
+
+        // STATBOT
+		statBot	  statBot;
 
         // CONSTRUCTOR / DESTRUCTOR
         Channel(std::string& ChannelName);

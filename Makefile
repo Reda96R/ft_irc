@@ -26,7 +26,7 @@ endif
 all: $(NAME)
 
 #::::::::::::::::SERV:::::::::::::::#
-S_FILES 	= init poll IrcErrors
+S_FILES 	= init poll IrcErrors statBot
 
 S_OBJS 		= $(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR)server/, $(S_FILES))))
 
