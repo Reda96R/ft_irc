@@ -266,6 +266,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 		// serverInfo.channels.push_back(channel);
 		//
 		// Add the client as operator
+		channel->setChannelCreationTime();
 		channel->addOperator(client);
 
 		std::string message = ":"  + client.getNickname()  +

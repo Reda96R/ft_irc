@@ -8,6 +8,7 @@
 # include <algorithm>
 # include "Client.hpp"
 # include "StatBot.hpp"
+# include <ctime>
 
 class Channel {
     private :
@@ -15,6 +16,7 @@ class Channel {
         std::string channelName;
         std::string channelTopic;
         std::string channelPassword;
+		std::time_t	channelCreationTime;
         ssize_t userLimit;
 
         // CLIENTS IN CHANNEL
@@ -49,10 +51,12 @@ class Channel {
         std::vector<Client*>  getChannelClients() const;
         std::vector<Client*>  getChannelOperators() const;
 		std::string			  getChannelClientsList() const;
+		std::string			  getChannelAge() const;
 
         // SETTERS
         void setChannelName(Client &me, std::string& channelName);
         void setChannelTopic(Client &me, std::string& channelTopic);
+        void setChannelCreationTime( void );
         void addClient(Client &me);
         void removeClient(Client &me);
         void addOperator(Client &me);

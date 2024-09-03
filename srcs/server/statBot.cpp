@@ -7,17 +7,24 @@ bool comparePairs(const std::pair<std::string, int>& a, const std::pair<std::str
 
 std::vector<std::pair<std::string, int> > getTopContributors( Channel& channel ) {
 	// Convert the map to a vector of pairs
+	size_t	  totalmessages = 0;
     std::vector<std::pair<std::string, int> > contributors;
 	std::map<std::string, int> messagesCount = channel.statBot.messagesCount; 
-    for (std::map<std::string, int>::iterator it = messagesCount.begin(); it != messagesCount.end(); ++it)
-        contributors.push_back(*it);
+    for (std::map<std::string, int>::iterator it = messagesCount.begin(); it != messagesCount.end(); ++it){
+		contributors.push_back(*it);
+		totalmessages += (*it).second;
+	}
 
 // Sort the vector by the count in descending order
     std::sort(contributors.begin(), contributors.end(), comparePairs);
 
    // Add the header as the first element
     std::vector<std::pair<std::string, int> > result;
-    result.push_back(std::make_pair(":::: Messages Leaderboard :::", -1)); // -1 signifies header
+    result.push_back(std::make_pair(":::: Channel Age :::", -1)); // -1 signifies header
+    result.push_back(std::make_pair(channel.getChannelAge(), -1)); 
+    result.push_back(std::make_pair(":::: Totale Messages :::", -1));
+    result.push_back(std::make_pair(intToString(totalmessages), -1));
+    result.push_back(std::make_pair(":::: Messages Leaderboard :::", -1));
 
     // Add the sorted contributors with rankings
     for (size_t i = 0; i < contributors.size(); ++i) {

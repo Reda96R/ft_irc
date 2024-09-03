@@ -1,6 +1,8 @@
 # include "../../includes/Channel.hpp"
 # include "../../includes/Client.hpp"
 # include "../../includes/Server.hpp"
+# include <ctime>
+# include <sstream>
 
 // USELESS CANONICAL FORM
 Channel::Channel(void) {
@@ -98,6 +100,34 @@ std::string	  Channel::getChannelClientsList() const {
 	return (clientsList);
 }
 
+std::string	  Channel::getChannelAge( void ) const{
+	std::time_t	  now = std::time(NULL);
+
+	double ageSeconds = std::difftime(now, this->channelCreationTime);
+
+	std::ostringstream	  age;
+
+	age.precision(2);
+    age.setf(std::ios::fixed, std::ios::floatfield);
+
+	if (ageSeconds < 60){
+		age << ageSeconds << " seconds";
+	}
+	else if (ageSeconds < 3600){
+		double ageMinutes = ageSeconds / 60.0;
+		age << ageMinutes << " minutes";
+	}
+	else if (ageSeconds < 86400){
+		double ageHours = ageSeconds / 3600.0;
+		age << ageHours << " hours";
+	}
+	else{
+		double ageDays = ageSeconds / 86400.0;
+		age << ageDays << " days";
+	}
+	return (age.str());
+}
+
 // SETTERS
 
 void Channel::setChannelName(Client &me, std::string& channelName) {
@@ -112,6 +142,10 @@ void Channel::setChannelTopic(Client &me, std::string& channelTopic) {
         this->channelTopic = channelTopic;
     else
         return ;
+}
+
+void	Channel::setChannelCreationTime( void ){
+	this->channelCreationTime = std::time(NULL);
 }
 
 void Channel::addClient(Client &me) {
