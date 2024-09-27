@@ -185,6 +185,20 @@ std::string	  sanitizeInput(std::string input ){
 	return (ret);
 }
 
+void Client::quitAllChannels(struct ServerInfo& serverInfo) {
+	std::map<std::string, Channel*>::iterator it;
+	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
+		(it->second)->removeClient(*this, serverInfo);
+		//this->channelRemove(it->first);
+	}
+}
+
+bool Client::amIInChannel(std::string& channelName) {
+	if (this->channels.find(channelName) != this->channels.end())
+		return true;
+	return false;
+}
+
 // Receives message from clients
 bool	Client::clientRecv( struct ServerInfo& serverInfo ){
 	int		ret;
@@ -196,8 +210,9 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
         perror("recv");
 		return (false);
 	}
-	else if (ret == 0){
+	else if (ret == 0) {
         std::cerr << RED << "Client disconnected" << RESET << std::endl;
+		quitAllChannels(serverInfo);
 		return (false);
 	}
 	else
@@ -239,3 +254,4 @@ bool	Client::operator==( const Client& rhs ) const{
 		return (true);
 	return (false);
 }
+

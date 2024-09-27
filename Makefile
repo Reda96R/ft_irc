@@ -4,7 +4,7 @@ OS 			= $(shell uname -s)
 #:::::::::::::::VARS:::::::::::::::#
 SRC_DIR		= srcs/
 OBJ_DIR 	= .obj/
-FSANITIZE 	= #-g -fsanitize=address
+FSANITIZE 	= -g -fsanitize=address
 CPPFLAGS 	= -Wall -Werror -Wextra -std=c++98 $(HEADER) $(FSANITIZE)
 CC 			= c++
 

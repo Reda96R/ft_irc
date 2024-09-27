@@ -75,9 +75,11 @@ class Client {
 		// bool				clientRecv( void );
 
 		void				clearInput( void );
+
+		void				quitChannel(Channel& channel);
+		void				quitAllChannels(struct ServerInfo& serverInfo);
+		bool				amIInChannel(std::string& channelName);
 };
-
-
 
 
 #endif // !CLIENT_HPP
