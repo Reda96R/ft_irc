@@ -172,7 +172,10 @@ void	Client::channelAdd( Channel& channel ){
 }
 
 void	Client::channelRemove( std::string channelName ){
-	this->channels.erase(this->channels.find(channelName));
+	std::map<std::string, Channel*>::iterator it = this->channels.find(channelName);
+	if (it != this->channels.end()) {
+		this->channels.erase(this->channels.find(channelName));
+	}
 }
 
 std::string	  sanitizeInput(std::string input ){

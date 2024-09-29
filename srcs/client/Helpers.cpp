@@ -168,7 +168,7 @@ void compareStrings(const std::string& str1, const std::string& str2) {
     }
 }
 
-//Chaneges int to std::string while filling the empty spaces (potentially 2) with zeros
+//Changes int to std::string while filling the empty spaces (potentially 2) with zeros
 std::string intToString(int value) {
     std::ostringstream oss;
     oss << std::setw(3) << std::setfill('0') << value;
