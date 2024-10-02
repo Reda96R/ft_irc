@@ -40,7 +40,7 @@ Channel &Channel::operator=(const Channel& other) {
 }
 
 // CONSTUCTOR / DESTRUCTOR
-
+# include <stdint.h>
 Channel::Channel(std::string& ChannelName){
     this->channelName = ChannelName;
     
@@ -246,8 +246,6 @@ void Channel::AddInvitedUser(Client &me) {
 
 void Channel::removeInvitedUser(Client &me) {
     this->invitedUsers.erase(std::remove(this->invitedUsers.begin(), this->invitedUsers.end(), &me), this->invitedUsers.end());
-    s_ircReply      replyInfo = {1, RPL_INVITING, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
-    messageToClient(me, replyGenerator(replyInfo));
 }
 
 void Channel::setTopicProtected() {
@@ -370,18 +368,32 @@ void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& u
         }
     }   
 
+	(void)serverInfo;
+	(void)reason;
     // remove from client channels' list
     kick->channelRemove(this->channelName);
     this->userCount--;
     std::string message;
-    if (reason.empty())
-        message = "has been kicked";
-    else
-        message = "has been kicked : " + reason;
-    s_ircReply      replyInfo = {1, RPL_KICK, me.getNickname(), this->channelName, "User " + kick->getNickname() + " " + message };
-    messageToClient(me, replyGenerator(replyInfo));
-    messageToChannel(*this, me, message);
-    messageToClient(*kick, "You have been kicked from the channel " + this->channelName + " by " + me.getNickname() + " due to " + reason);
+    // if (reason.empty())
+    //     message = "has been kicked";
+    // else
+    //     message = "has been kicked : " + reason;
+    // s_ircReply      replyInfo = {1, RPL_KICK, me.getNickname(), this->channelName, "User " + kick->getNickname() + " " + message };
+	message = ":"  + me.getNickname()  +
+			  "!~" + me.getUsername()  +
+			  "@"  + me.getIpAddress() +
+			  " "  + "KICK" + " " + this->getChannelName() + " " + kick->getNickname() + " : " + reason + "\n";
+
+	for (size_t i = 0; i < this->getChannelOperators().size(); ++i)
+		messageToClient(*this->getChannelOperators().at(i), message);
+	for (size_t i = 0; i < this->getChannelClients().size(); ++i)
+		messageToClient(*this->getChannelClients().at(i), message);
+    messageToClient(*kick, message);
+
+    // messageToClient(me, replyGenerator(replyInfo));
+    // messageToChannel(*this, me, message);
+    // messageToClient(*kick, "You have been kicked from the channel " + this->channelName + " by " + me.getNickname() + " due to " + reason);
+    //
 }
 
 void Channel::makeOperator(Client &me, std::string& user) {
@@ -472,12 +484,12 @@ void Channel::removeChannelInviteOnly(Client &me) {
         return ;
     }
 }
-
+#include<string>
 void Channel::setChannelUserLimit(Client &me, ssize_t limit) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->userLimitOnOff = true;
         this->userLimit = limit;
-        s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, me.getNickname(), this->channelName, "User limit set to " + std::to_string(limit) };
+        s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, me.getNickname(), this->channelName, "User limit set to " + intToString(limit) };
         messageToClient(me, replyGenerator(replyInfo));
     }
     else {

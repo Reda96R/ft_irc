@@ -288,7 +288,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 			messageToClient(client, message);
 
 			message = ":"  + serverInfo.servIpAddress   +
-			" 366 "  + client.getNickname()   +
+					" 366 "  + client.getNickname()   +
 			"  " + it->second->getChannelName()  +
 			" :End of /NAMES list.\n";
 			messageToClient(client, message);
@@ -430,6 +430,7 @@ void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 	std::map<std::string, Channel*> channels = client.getChannels();
 	std::map<std::string, Channel*>::iterator it;
 	for (it = channels.begin() ; it != channels.end(); ++it){
+		messageToChannel(*it->second, client, "QUIT");
 		it->second->removeClient(client, serverInfo);
 		client.channelRemove(it->first);
 	}
