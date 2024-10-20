@@ -38,7 +38,7 @@ std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> Comman
 }
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
-			/* ~~~general commands ~~~ */
+			/* ~~~server commands ~~~ */
 void	Commands::passCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments))
 		return ;
@@ -95,9 +95,9 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 
 		//Changing the Nickname
 		if (client.getStatus().registered){
-			std::string oldnick = client.getNickname();
+			std::string oldNick = client.getNickname();
 			client.setNickname(client.getInput().arguments.at(0));
-			std::string	  message = oldnick + " Changed his nickname to " + client.getNickname();
+			std::string	  message = oldNick + " Changed his nickname to " + client.getNickname();
 			for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 				if (serverInfo.clients[i]->getNickname() != client.getNickname()){
 					s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i), message};
@@ -121,14 +121,6 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 }
 
 void	Commands::userCommand( Client& client, struct ServerInfo& serverInfo ){
-	//TODO:
-	// √ check if authenticated
-	// √ check if already registered
-	// √ check if command's parameters exist if not set username to unknown
-	// √ parse the content
-	// √ set the username
-	// √ handle the server and host names
-
 	if (!client.getStatus().authenticated || client.getStatus().registered){
 		if (!client.getStatus().authenticated){
 			s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
@@ -177,19 +169,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& serverInfo ){
 }
 
 // :::::::::::::::::::::::::::::::: JOIN COMMAND AND DEPENDECY FUNCTIONS ::::::::::::::::::::::::::::::::
-//NOTE: there's isValidChannelName() in helpers.cpp
-// bool ft_checkIfChannelNameIsValid(std::string channelName){
-// 	if (channelName[0] != '#')
-// 		return false;
-// 	for (size_t i = 1; i < channelName.size(); i++){
-// 		if (!isalnum(channelName[i]) && channelName[i] != '_')
-// 			return false;
-// 	}
-// 	return true;
-// }
-
 void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
-	// Check if the client is registered
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
@@ -197,7 +177,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	}
 	
 	// Check if the trailing is empty
-	// TODO: WTF is this?
+	// TODO: WTF is this? Don't worry about it bro, ma lak dakhel. 
 	// if (trailingCheck(client.getInput().arguments)){
 	// 	std::cerr << RED << "Trailing is empty" << RESET << std::endl;
 		// messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
@@ -215,12 +195,50 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	// Check if the channel already exists
 	std::map<std::string, Channel*>::iterator	it = serverInfo.channels.find(channelName);
 	if (it != serverInfo.channels.end()){
+		// Check if the channel is password protected
+		if (it->second->isChannelPasswordProtected()){
+			// Check if there are enough arguments
+			if (client.getInput().arguments.size() < 2){
+				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "JOIN", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+		
+			// Check if the password is correct
+			if (!it->second->comparePassword(client.getInput().arguments[1])){
+				s_ircReply	  replyInfo = {1, ERR_BADCHANNELKEY, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+		}
+
+
+		// Check if the channel is full
+		if (it->second->isChannelUserLimitOnOff()) {
+			if (it->second->getUserLimit() < it->second->getUserCount() + 1){
+				s_ircReply	  replyInfo = {1, ERR_CHANNELISFULL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+		}
+
+		// Check if the channel is invite only
+		if ((it)->second->isChannelInviteOnly()){
+			if (!(it)->second->isClientInvited(client)){
+				s_ircReply	  replyInfo = {1, ERR_INVITEONLYCHAN, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+		}
+
 		// Check if client is part of the channel
 		std::map<std::string, Channel*> channels = client.getChannels();
 		if (channels.find(channelName) == channels.end()){
 			// Add client to channel
 			it->second->addClient(client);
 			client.channelAdd(*it->second);
+			// Remove client from invited list
+			it->second->removeInvitedUser(client);
 
 			std::string	  message = ":"  + client.getNickname()  +
 					  "!~" + client.getUsername()  +
@@ -250,7 +268,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 			messageToClient(client, message);
 
 			message = ":"  + serverInfo.servIpAddress   +
-			" 366 "  + client.getNickname()   +
+					" 366 "  + client.getNickname()   +
 			"  " + it->second->getChannelName()  +
 			" :End of /NAMES list.\n";
 			messageToClient(client, message);
@@ -296,14 +314,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	}
 }
 
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
+// :::::::::::::::::::::::::::::::::::::::::::: PRIVMSG COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
-	//TODO:
-	// √ check if not REGISTERED
-	// √ check msg destination
-	// √ check text msg validity
-
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
@@ -314,46 +326,40 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (!privmsgAnalyser(client.getInput().arguments, privmsgInput, client))
 		return ;
 	else{
-		//TODO:
-		//	√ check if the target is user or a channel:
-		//	  √ channel:
-		//		√ check if the user is a member of the channel (client class will contain
-		//		data structure that contains the names of the channels that the client is part of)
-		//		√ check if the channel exists (to send nosuchchannel or cannotsendtochan)
-		//	  √ user:
-		//		√ search for the user if found sent the message if not return nosuchnick
-		//
-
 		while (!privmsgInput.targets.empty()){
 			/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
 				std::map<std::string, Channel*>::iterator	it;
 				it = serverInfo.channels.find(privmsgInput.targets.top());
 				if (it != serverInfo.channels.end()){
-					//√ Channel exists √
-					if (!messageToChannel(*it->second, client, privmsgInput.message)){
-						//display send() error if (!messageToChannel)
+					// Channel exists
+					Channel* channel = it->second;
+					// Check if the client is a member of the channel
+					if (serverInfo.channels[privmsgInput.targets.top()]->isClientInChannel(client)){
+						messageToChannel(*channel, client, privmsgInput.message);
+					}
+					else {
+						// Client is not a member of the channel
+						s_ircReply replyInfo = {1, ERR_CANNOTSENDTOCHAN, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode)};
+						messageToClient(client, replyGenerator(replyInfo));
 					}
 				}
-				else{
-					s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
-					messageToClient(client, replyGenerator(replyInfo));
-				}
 			}
+
 			/* ~~~message to client~~~ */
 			else {
 				std::map<std::string, Client*>::iterator	it;
 				it = serverInfo.clientsMap.find(privmsgInput.targets.top());
+				//Check if the client exists
 				if (it != serverInfo.clientsMap.end()){
+					//Client exists
 					if (client.getNickname() != it->second->getNickname()){
 						s_messageInfo messageInfo = {it->second->getNickname(),
-													&client, it->second, privmsgInput.message};
-						if (!messageToClient(messageInfo)){
-							//display send() error if (!messageToCient)
-						}
+						&client, it->second, privmsgInput.message};
+						messageToClient(messageInfo);
 					}
 				}
-				//X Client doesn't exist X
+				//Client doesn't exist
 				else{
 					s_ircReply	  replyInfo = {1, ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
 					messageToClient(client, replyGenerator(replyInfo));
@@ -365,6 +371,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	}
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: PING COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
 	(void)serverInfo;
 	if (!client.getStatus().registered){
@@ -376,8 +383,8 @@ void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
 	send(client.getPollFd(), message.c_str(), message.length(), 0);
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: QUIT COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
-	(void)serverInfo;
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
@@ -388,14 +395,22 @@ void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 	std::map<std::string, Channel*> channels = client.getChannels();
 	std::map<std::string, Channel*>::iterator it;
 	for (it = channels.begin() ; it != channels.end(); ++it){
-		messageToChannel(*it->second, client, "QUIT");
-		it->second->removeClient(client);
+		std::string message = ":"  + client.getNickname() +
+			  "!~" + client.getUsername()  +
+			  "@"  + client.getIpAddress() +
+			  " "  + "QUIT\n";
+		for (size_t i = 0; i < it->second->getChannelOperators().size(); ++i)
+			messageToClient(*it->second->getChannelOperators().at(i), message);
+		for (size_t i = 0; i < it->second->getChannelClients().size(); ++i)
+			messageToClient(*it->second->getChannelClients().at(i), message);
+		it->second->removeClient(client, serverInfo);
 		client.channelRemove(it->first);
 	}
 }
 
 			/* ~~~channel commands ~~~ */
-void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
+// :::::::::::::::::::::::::::::::::::::::::::: KICK COMMAND ::::::::::::::::::::::::::::::::::::::::::::
+void	Commands::kickChannelCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
@@ -403,9 +418,36 @@ void	Commands::kickChannelCommand( Client& client, struct ServerInfo& ){
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
+	if (client.getInput().arguments.size() != 2 && client.getInput().arguments.size() != 3) {	
+		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "KICK", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}	
+	std::string channelName = client.getInput().arguments.at(0);
+	std::string userName = client.getInput().arguments.at(1);
+	std::string reasonKick = "";
+	if (client.getInput().arguments.size() == 3)
+		reasonKick = client.getInput().arguments.at(2);
+	
+	// Check if the channel exists
+	if (serverInfo.channels.find(channelName) == serverInfo.channels.end()){
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// Check if channelName is Valid
+	if (client.amIInChannel(channelName) == false){
+		s_ircReply	  replyInfo = {1, ERR_NOTONCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+	serverInfo.channels[channelName]->kickUser(client, serverInfo, userName, reasonKick);
+
 }
 
-void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& ){
+// :::::::::::::::::::::::::::::::::::::::::::: INVITE COMMAND ::::::::::::::::::::::::::::::::::::::::::::
+void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
@@ -413,9 +455,55 @@ void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& ){
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
+	if (client.getInput().arguments.size() != 2){
+		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "INVITE", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+	std::string userName = client.getInput().arguments.at(0);
+	std::string channelName = client.getInput().arguments.at(1);
+
+	// check if the channel exists
+	if (serverInfo.channels.find(channelName) == serverInfo.channels.end()){
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// check if the channel exists
+	if (client.amIInChannel(channelName) == false){
+		s_ircReply	  replyInfo = {1, ERR_NOTONCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// check if there is a user with the specified name (vector of clients)
+	for (std::vector<Client*>::iterator it = serverInfo.clients.begin(); it != serverInfo.clients.end(); ++it){
+		if ((*it)->getNickname() == userName){
+			// check if the user is already in the channel
+			if (serverInfo.channels[channelName]->isClientInChannel(userName)){
+				s_ircReply	  replyInfo = {1, ERR_USERONCHANNEL, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			// check if the user is invited
+			if (serverInfo.channels[channelName]->isClientInvited(*(*it))){
+				s_ircReply	  replyInfo = {1, RPL_INVITING, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			// invite the user
+			serverInfo.channels[channelName]->inviteUser(client, serverInfo, userName);
+
+			return ;
+		}
+	}
+
 }
 
-void	Commands::topicChannelCommand( Client& client, struct ServerInfo& ){
+// :::::::::::::::::::::::::::::::::::::::::::: TOPIC COMMAND ::::::::::::::::::::::::::::::::::::::::::::
+void	Commands::topicChannelCommand( Client& client, struct ServerInfo& serverInfo ) {
+	(void)serverInfo;
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
@@ -423,15 +511,237 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& ){
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
+	// Change the topic of the channel
+	if (client.getInput().arguments.size() > 2 || client.getInput().arguments.size() == 0){
+		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "TOPIC", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	std::string channelName = client.getInput().arguments.at(0);
+
+	// Check if the channel exists
+	if (serverInfo.channels.find(channelName) == serverInfo.channels.end()){
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// Check if the channel exists [map] and that the second argument is not empty
+	if (client.amIInChannel(channelName) == false){
+		s_ircReply	  replyInfo = {1, ERR_NOTONCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	Channel *channel = serverInfo.channels[channelName];
+
+	if (client.getInput().arguments.size() == 1) {
+		if (serverInfo.channels[channelName]->getChannelTopic().empty()){
+			s_ircReply	  replyInfo = {3, RPL_NOTOPIC, client.getNickname(), channelName , ":" + errorMessages.at(replyInfo.errorCode) };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
+		else{
+			s_ircReply	  replyInfo = {3, RPL_TOPIC, client.getNickname(), channelName , ":" + serverInfo.channels[channelName]->getChannelTopic() };
+			messageToClient(client, replyGenerator(replyInfo));
+		}
+		return ;
+	}
+
+	std::string topic = client.getInput().arguments.at(1);
+
+	channel->setChannelTopic(client, topic);
 }
 
-void	Commands::modeChannelCommand( Client& client, struct ServerInfo& ){
+// 3toi lol
+
+int ft_atoi(const std::string& str){
+	int result = 0;
+	for (size_t i = 0; i < str.size(); ++i){
+		if (str[i] < '0' || str[i] > '9')
+			return -1;
+		result = result * 10 + str[i] - '0';
+	}
+	return result;
+}
+
+// :::::::::::::::::::::::::::::::::::::::::::: MODE COMMAND ::::::::::::::::::::::::::::::::::::::::::::
+// MODE USE CASES:
+// 1. INVITE: MODE #channel +i
+// 2. TOPIC: MODE #channel +t
+// 3. PASSWORD: MODE #channel +k password
+// 4. USER LIMIT: MODE #channel +l limit
+// 5. OPERATOR: MODE #channel +o user
+
+void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
+	}
+
+	if (client.getInput().arguments.size() < 2){
+		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	std::string channelName = client.getInput().arguments.at(0);
+	std::string mode = client.getInput().arguments.at(1);
+
+	// check if server has the channel
+	if (serverInfo.channels.find(channelName) == serverInfo.channels.end()){
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// Check if the channel exists
+	if (client.amIInChannel(channelName) == false){
+		s_ircReply	  replyInfo = {1, ERR_NOTONCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	Channel *channel = serverInfo.channels[channelName];
+
+	// Check if the user is an operator
+	if (!channel->isClientOperator(client)){
+		s_ircReply	  replyInfo = {1, ERR_CHANOPRIVSNEEDED, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// Check if the mode is valid
+	if (mode.length() < 2 || (mode[0] != '+' && mode[0] != '-') || (mode[1] != 'i' && mode[1] != 't' && mode[1] != 'k' && mode[1] != 'l' && mode[1] != 'o')){
+		s_ircReply	  replyInfo = {1, ERR_UNKNOWNMODE, client.getNickname(), mode, errorMessages.at(replyInfo.errorCode) };
+		messageToClient(client, replyGenerator(replyInfo));
+		return ;
+	}
+
+	// Check if the mode is invite only
+	if (mode[1] == 'i'){
+		if (mode[0] == '+') {
+			channel->setChannelInviteOnly(client);
+		} else {
+			channel->removeChannelInviteOnly(client);
+		}
+	}
+
+	// Check if the mode is topic protected
+	if (mode[1] == 't'){
+		if (mode[0] == '+'){
+			channel->setTopicProtected();
+			std::string	  message = ":" + client.getNickname() + " MODE " + channelName + " +t\n";
+			s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "Channel is now topic protected" };
+			messageToClient(client, replyGenerator(replyInfo));
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*(channel->getChannelClients().at(i)), message);
+		} else { 
+			channel->removeTopicProtected();
+			std::string	  message = ":" + client.getNickname() + " MODE " + channelName + " -t\n";
+			s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "Channel is no longer topic protected" };
+			messageToClient(client, replyGenerator(replyInfo));
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*(channel->getChannelClients().at(i)), message);
+		}		
+	}
+
+	// Check if the mode is password protected
+	if (mode[1] == 'k'){
+		if (mode[0] == '+'){
+			if (client.getInput().arguments.size() < 3){
+				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			channel->setChannelPassword(client, client.getInput().arguments.at(2));
+		}
+		else
+			channel->removeChannelPassword(client);
+	}
+
+	// Check if the mode is user limit
+	if (mode[1] == 'l'){
+		if (mode[0] == '+'){
+			if (client.getInput().arguments.size() < 3){
+				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			if (ft_atoi(client.getInput().arguments.at(2)) == -1){
+				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			// check if the user limit is valid if its less than the number of users in the channel
+			if (channel->getUserCount() > (ssize_t)ft_atoi(client.getInput().arguments.at(2))){
+				s_ircReply	  replyInfo = {1, ERR_BADCHANMASK, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+
+			channel->setChannelUserLimit(client, (ssize_t)ft_atoi(client.getInput().arguments.at(2)));
+		}
+		else
+			channel->removeChannelUserLimit(client);
+	}
+
+	// Check if the mode is operator
+	if (mode[1] == 'o'){
+		if (mode[0] == '+'){
+			if (client.getInput().arguments.size() < 3){
+				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			std::string userName = client.getInput().arguments.at(2);
+			// check if the user exists in the channel
+			if (channel->isClientInChannel(userName)){
+				// check if the user is already an operator
+				if (channel->isClientOperator(userName)){			
+					s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is now an operator" };
+					messageToClient(client, replyGenerator(replyInfo));
+					return ;
+				}
+				// make the user an operator
+				channel->makeOperator(client, userName);
+				s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is now an operator" };
+    			messageToClient(client, replyGenerator(replyInfo));
+			}
+			else {
+				s_ircReply	  replyInfo = {1, ERR_USERNOTINCHANNEL, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+			}
+
+		}
+		else{
+			if (client.getInput().arguments.size() < 3){
+				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+				return ;
+			}
+			std::string userName = client.getInput().arguments.at(2);
+			// check if the user exists in the channel
+			if (channel->isClientInChannel(userName)){
+				// check if the user is an operator
+				if (!channel->isClientOperator(userName)){
+					s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is no longer an operator" };
+					messageToClient(client, replyGenerator(replyInfo));
+					return ;
+				}
+				// remove the user from the operator list
+				channel->removeOperator(client, userName);
+				s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is no longer an operator" };
+				messageToClient(client, replyGenerator(replyInfo));
+			}
+			else {
+				s_ircReply	  replyInfo = {1, ERR_USERNOTINCHANNEL, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
+			}
+		}
 	}
 }
 

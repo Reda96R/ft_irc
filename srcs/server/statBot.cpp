@@ -34,30 +34,22 @@ std::vector<std::pair<std::string, int> > getStats( Channel& channel ){
 									 intToString(contributors[i].second) +
 									" messages", contributors[i].second));
     }
-
     return (result);
 }
 
 void	ircBot( Channel& channel ){
-
 	std::vector<std::pair<std::string, int> > data = getStats(channel);
 
 	for (size_t i = 0; i < data.size(); ++i){
 		std::string message = ":statBot PRIVMSG " + channel.getChannelName() + " " + data[i].first;
 		//Operators
 		for (size_t j = 0; j < channel.getChannelOperators().size() ; ++j){
-				if (!messageToClient(*channel.getChannelOperators()[j], message)){
-					std::cout << RED << "Send failure" << RESET << std::endl;
-				}
+			messageToClient(*channel.getChannelOperators()[j], message);
 		}
-
 		//Clients
 		for (size_t j = 0; j < channel.getChannelClients().size() ; ++j){
-				if (!messageToClient(*channel.getChannelClients()[j], message)){
-					std::cout << RED << "Send failure" << RESET << std::endl;
-				}
+			messageToClient(*channel.getChannelClients()[j], message);
 		}
 	}
-
 }
 

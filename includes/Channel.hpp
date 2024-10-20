@@ -18,6 +18,7 @@ class Channel {
         std::string channelPassword;
 		std::time_t	channelCreationTime;
         ssize_t userLimit;
+        ssize_t userCount;
 
         // CLIENTS IN CHANNEL
         std::vector<Client*> channelClients;
@@ -31,6 +32,7 @@ class Channel {
         bool channelPasswordProtected;
         bool channelInviteOnly;
         bool userLimitOnOff;
+        bool topicProtected;
 
         // CANONICAL FORM
         Channel(void);
@@ -46,28 +48,32 @@ class Channel {
         ~Channel();
 
         // GETTERS
-        std::string			  getChannelName() const;
-        std::string			  getChannelTopic() const;
-        std::vector<Client*>  getChannelClients() const;
-        std::vector<Client*>  getChannelOperators() const;
-		std::string			  getChannelClientsList() const;
-		std::string			  getChannelAge() const;
+        std::string			    getChannelName() const;
+        std::string			    getChannelTopic() const;
+        std::vector<Client*>    getChannelClients() const;
+        std::vector<Client*>    getChannelOperators() const;
+		std::string			    getChannelClientsList() const;
+		std::string			    getChannelAge() const;
+        ssize_t		            getUserLimit() const;
+        ssize_t                 getUserCount() const;
 
         // SETTERS
         void setChannelName(Client &me, std::string& channelName);
         void setChannelTopic(Client &me, std::string& channelTopic);
         void setChannelCreationTime( void );
         void addClient(Client &me);
-        void removeClient(Client &me);
+        void removeClient(Client &me, struct ServerInfo& serverInfo);
         void addOperator(Client &me);
         void removeOperator(Client &me);
         void AddInvitedUser(Client &me);
         void removeInvitedUser(Client &me);
+        void setTopicProtected();
+        void removeTopicProtected();
 
 
         // METHODS
         void inviteUser(Client &me, struct ServerInfo& serverInfo, std::string& user);
-        void kickUser(Client &me, struct ServerInfo& serverInfo, std::string& user);
+        void kickUser(Client &me, struct ServerInfo& serverInfo, std::string& user, std::string reason);
 
         void makeOperator(Client &me, std::string& user);
         void removeOperator(Client &me, std::string& user);
@@ -85,7 +91,19 @@ class Channel {
 
         void sendMessage(Client &usr, std::string& message);
 
-        void sendChannelMessage(Client &me, std::string& message);    
+        void sendChannelMessage(Client &me, std::string& message);
+        bool comparePassword(std::string& password);
+
+        // IS METHODS
+        void isThereSomeoneLeftRightNow(struct ServerInfo& serverInfo);
+        bool isClientInChannel(std::string& nickname);
+        bool isClientInChannel(Client &client);
+        bool isClientOperator(std::string& nickname);
+        bool isClientOperator(Client &client);
+        bool isClientInvited(Client &client);
+        bool isChannelInviteOnly(void);
+        bool isChannelUserLimitOnOff(void);
+        bool isChannelPasswordProtected(void);
 };
 
 #endif

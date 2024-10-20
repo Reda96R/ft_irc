@@ -1,4 +1,5 @@
 #include "../../includes/Server.hpp"
+#include <sys/socket.h>
 
 bool initialize_server(int argc, char **argv, ServerInfo &server_info)
 {
@@ -18,7 +19,7 @@ bool initialize_server(int argc, char **argv, ServerInfo &server_info)
     server_info.port = port;
     server_info.password = argv[2];
 
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (sockfd < 0)
     {
         std::cerr << "Socket creation failed\n";

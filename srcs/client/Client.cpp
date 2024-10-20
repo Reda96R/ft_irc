@@ -1,15 +1,11 @@
 #include "../../includes/Client.hpp"
 #include "../../includes/Server.hpp"
 #include "../../includes/macros.hpp"
-#include <netinet/in.h>
-#include <sstream>
-#include <stdio.h>
 
 //::::::::::::::::::Constructors:::::::::::::::::::::::::
 Client::Client( void ){
 	this->clientNickname = "-";
 	this->clientUsername = "-";
-	this->clientIsOperator = "0";
 	this->clientStatus.pass = false;
 	this->clientStatus.nick = false;
 	this->clientStatus.user = false;
@@ -26,9 +22,14 @@ Client& Client::operator=( const Client& rhs ){
 	if (this != &rhs){
 		this->clientNickname = rhs.clientNickname;
 		this->clientUsername = rhs.clientUsername;
-		this->clientIsOperator = rhs.clientIsOperator;
 	}
 	return (*this);
+}
+
+bool	Client::operator==( const Client& rhs ) const{
+	if (this->clientNickname == rhs.clientNickname)
+		return (true);
+	return (false);
 }
 
 //::::::::::::::::::Getters and Setters:::::::::::::::::::::::::
@@ -38,10 +39,6 @@ std::map<std::string, Channel*>	  Client::getChannels( void ){
 
 struct s_status Client::getStatus( void ) const{
 	return (this->clientStatus);
-}
-
-bool	Client::getType( void ) const{
-	return (this->clientIsOperator);
 }
 
 std::string	  Client::getIpAddress( void ) const{
@@ -90,10 +87,6 @@ void	Client::setRealname( std::string& realname ){
 
 void	Client::setIpAddress( std::string& ipAddress ){
 	this->clientIpAddress = ipAddress;
-}
-
-void	Client::setType( bool type ){
-	this->clientIsOperator = type;
 }
 
 void	Client::setStatus( std::string target, bool value ){
@@ -172,7 +165,10 @@ void	Client::channelAdd( Channel& channel ){
 }
 
 void	Client::channelRemove( std::string channelName ){
-	this->channels.erase(this->channels.find(channelName));
+	std::map<std::string, Channel*>::iterator it = this->channels.find(channelName);
+	if (it != this->channels.end()) {
+		this->channels.erase(this->channels.find(channelName));
+	}
 }
 
 std::string	  sanitizeInput(std::string input ){
@@ -183,6 +179,20 @@ std::string	  sanitizeInput(std::string input ){
 			ret[j++] = input[i];
 	}
 	return (ret);
+}
+
+void Client::quitAllChannels(struct ServerInfo& serverInfo) {
+	std::map<std::string, Channel*>::iterator it;
+	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
+		(it->second)->removeClient(*this, serverInfo);
+		//this->channelRemove(it->first);
+	}
+}
+
+bool Client::amIInChannel(std::string& channelName) {
+	if (this->channels.find(channelName) != this->channels.end())
+		return true;
+	return false;
 }
 
 // Receives message from clients
@@ -196,8 +206,9 @@ bool	Client::clientRecv( struct ServerInfo& serverInfo ){
         perror("recv");
 		return (false);
 	}
-	else if (ret == 0){
+	else if (ret == 0) {
         std::cerr << RED << "Client disconnected" << RESET << std::endl;
+		quitAllChannels(serverInfo);
 		return (false);
 	}
 	else
@@ -231,11 +242,4 @@ void	Client::clearInput( void ){
 
 //::::::::::::::::::Deconstructor:::::::::::::::::::::::::
 Client::~Client( void ){
-}
-
-//::::::::::::::::::Comparison operator:::::::::::::::::::::::::
-bool	Client::operator==( const Client& rhs ) const{
-	if (this->clientNickname == rhs.clientNickname)
-		return (true);
-	return (false);
 }

@@ -4,7 +4,7 @@ OS 			= $(shell uname -s)
 #:::::::::::::::VARS:::::::::::::::#
 SRC_DIR		= srcs/
 OBJ_DIR 	= .obj/
-FSANITIZE 	= #-g -fsanitize=address
+# FSANITIZE 	= -g -fsanitize=address
 CPPFLAGS 	= -Wall -Werror -Wextra -std=c++98 $(HEADER) $(FSANITIZE)
 CC 			= c++
 
@@ -16,11 +16,9 @@ M_OBJS 		=$(addprefix $(OBJ_DIR), $(addsuffix .o, $(addprefix $(SRC_DIR), $(MAIN
 
 #::::::::::::::::OS:::::::::::::::#
 ifeq ($(OS), Darwin)
-# COMP 		= 
-# COMP_O 	=
+FOR 		= MacOS
 else
-# COMP 		=
-# COMP_O 	=
+FOR 		= Linux
 endif
 
 all: $(NAME)
@@ -45,7 +43,7 @@ $(NAME): $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS)
 	@echo $(cursive)$(grey)":::Making object files:::"$(reset)
 	@echo $(cursive)$(grey)":::Compiling $(NAME):::"$(reset)
 	@$(CC) $(CPPFLAGS) $(M_OBJS) $(S_OBJS) $(C_OBJS) $(CH_OBJS) -o $(NAME)
-	@echo $(green)":::✅ $(NAME) is ready ✅:::"$(reset)
+	@echo $(green)":::✅ $(NAME) for $(FOR) is ready ✅:::"$(reset)
 
 $(OBJ_DIR)%.o: %.cpp 
 	@mkdir -p $(OBJ_DIR)$(SRC_DIR)server $(OBJ_DIR)$(SRC_DIR)client $(OBJ_DIR)$(SRC_DIR)channels
@@ -65,32 +63,6 @@ fclean: clean
 re: fclean all
 
 .PHONY: all clean fclean re os
-
-define os
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(yellow) "" $(reset)
-	@echo $(green) "for $(OS)" $(reset)
-	@echo $(green) "" $(reset)
-endef
 
 #::::::::::::::Colors::::::::::::::#
 black  		= "\033[0;30m"

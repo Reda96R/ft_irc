@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     std::vector<pollfd> fds;
 
     if (!initialize_server(argc, argv, server_info))
-        return 1;
+        return (1);
 
     // Start listening for incoming connections
     listen(server_info.sockfd, 5);
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
         handlingPolling(server_info, fds, server_info.clients);
 	}
     close(server_info.sockfd);
-    return 0;
+    return (0);
 
 }
 

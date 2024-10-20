@@ -4,8 +4,6 @@ std::map<IrcErrors, std::string> errorMessages;
 
 void initializeErrorMessages() {
     errorMessages[RPL_WELCOME]			= "Welcome to the Internet Relay Network";
-    errorMessages[RPL_NOTOPIC]			= "No topic is set";
-    errorMessages[RPL_TOPIC]			= "";
     errorMessages[ERR_NOSUCHNICK]		= "No such nick/channel";
     errorMessages[ERR_NOSUCHCHANNEL]	= "No such channel";
     errorMessages[ERR_CANNOTSENDTOCHAN] = "Cannot send to channel";
@@ -32,6 +30,30 @@ void initializeErrorMessages() {
     errorMessages[ERR_BANLISTFULL]		= "Channel list is full";
     errorMessages[ERR_CHANOPRIVSNEEDED] = "You're not channel operator";
     errorMessages[ERR_UMODEUNKNOWNFLAG] = "Unknown MODE flag";
+
+    // KICK
+
+    // errorMessages[RPL_KICK]				= "has been kicked";
+
+    // INVITE
+    errorMessages[RPL_INVITING]			= "is inviting you to";
+    errorMessages[RPL_AWAY]				= "is away";
+
+	// TOPIC
+    errorMessages[RPL_TOPIC]			= "Topic:";
+    errorMessages[RPL_NOTOPIC]			= "No topic is set";
+
+	
+    // MODE 
+    errorMessages[RPL_CHANNELMODEIS]	= "Channel Mode is";
+    errorMessages[RPL_BANLIST]			= "Ban List";
+    errorMessages[RPL_EXCEPTLIST]		= "Exception List";
+    errorMessages[RPL_INVITELIST]		= "Invite List";
+    errorMessages[RPL_ENDOFBANLIST]		= "End of Ban List";
+    errorMessages[RPL_ENDOFEXCEPTLIST]	= "End of Exception List";
+    errorMessages[RPL_ENDOFINVITELIST]	= "End of Invite List";
+    errorMessages[RPL_UNIQOPIS]			= "is the unique channel operator";
+
 }
 
 // Ensure the map is initialized at the start

@@ -15,11 +15,8 @@ int	commandParser( std::string& input, Client& client, struct ServerInfo& server
 	Commands		commands;
 	t_commandsMap	commandsMap = commands.getCommandMap();
 
-	if (input.empty()){
-		//TODO: this message is only for debugging
-		std::cerr << "empty input" << std::endl;
+	if (input.empty())
 		return (0);
-	}
 
 	if (!input.empty() && input[input.size() - 1] == '\r')
 		input = input.substr(0, input.size() - 1);
