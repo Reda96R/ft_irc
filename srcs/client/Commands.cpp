@@ -38,7 +38,7 @@ std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> Comman
 }
 
 //::::::::::::::::::Commands:::::::::::::::::::::::::
-			/* ~~~general commands ~~~ */
+			/* ~~~server commands ~~~ */
 void	Commands::passCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments))
 		return ;
@@ -95,9 +95,9 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 
 		//Changing the Nickname
 		if (client.getStatus().registered){
-			std::string oldnick = client.getNickname();
+			std::string oldNick = client.getNickname();
 			client.setNickname(client.getInput().arguments.at(0));
-			std::string	  message = oldnick + " Changed his nickname to " + client.getNickname();
+			std::string	  message = oldNick + " Changed his nickname to " + client.getNickname();
 			for (size_t i = 0; i < serverInfo.clients.size(); ++i){
 				if (serverInfo.clients[i]->getNickname() != client.getNickname()){
 					s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i), message};
@@ -121,14 +121,6 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 }
 
 void	Commands::userCommand( Client& client, struct ServerInfo& serverInfo ){
-	//TODO:
-	// √ check if authenticated
-	// √ check if already registered
-	// √ check if command's parameters exist if not set username to unknown
-	// √ parse the content
-	// √ set the username
-	// √ handle the server and host names
-
 	if (!client.getStatus().authenticated || client.getStatus().registered){
 		if (!client.getStatus().authenticated){
 			s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
@@ -177,19 +169,7 @@ void	Commands::userCommand( Client& client, struct ServerInfo& serverInfo ){
 }
 
 // :::::::::::::::::::::::::::::::: JOIN COMMAND AND DEPENDECY FUNCTIONS ::::::::::::::::::::::::::::::::
-//NOTE: there's isValidChannelName() in helpers.cpp
-// bool ft_checkIfChannelNameIsValid(std::string channelName){
-// 	if (channelName[0] != '#')
-// 		return false;
-// 	for (size_t i = 1; i < channelName.size(); i++){
-// 		if (!isalnum(channelName[i]) && channelName[i] != '_')
-// 			return false;
-// 	}
-// 	return true;
-// }
-
 void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
-	// Check if the client is registered
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
@@ -334,14 +314,8 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	}
 }
 
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
+// :::::::::::::::::::::::::::::::::::::::::::: PRIVMSG COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
-	//TODO:
-	// √ check if not REGISTERED
-	// √ check msg destination
-	// √ check text msg validity
-
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
@@ -352,16 +326,6 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (!privmsgAnalyser(client.getInput().arguments, privmsgInput, client))
 		return ;
 	else{
-		//TODO:
-		//	√ check if the target is user or a channel:
-		//	  √ channel:
-		//		√ check if the user is a member of the channel (client class will contain
-		//		data structure that contains the names of the channels that the client is part of)
-		//		√ check if the channel exists (to send nosuchchannel or cannotsendtochan)
-		//	  √ user:
-		//		√ search for the user if found sent the message if not return nosuchnick
-		//
-
 		while (!privmsgInput.targets.empty()){
 			/* ~~~message to channel~~~ */
 			if (isValidChannelName(privmsgInput.targets.top())){
@@ -372,30 +336,30 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 					Channel* channel = it->second;
 					// Check if the client is a member of the channel
 					if (serverInfo.channels[privmsgInput.targets.top()]->isClientInChannel(client)){
-						if (!messageToChannel(*channel, client, privmsgInput.message)){
-							// Display send() error if messageToChannel fails
-						}
-					} else {
+						messageToChannel(*channel, client, privmsgInput.message);
+					}
+					else {
 						// Client is not a member of the channel
-						s_ircReply replyInfo = {1, ERR_CANNOTSENDTOCHAN, client.getNickname(), privmsgInput.targets.top(), "You are not a member of the channel."};
+						s_ircReply replyInfo = {1, ERR_CANNOTSENDTOCHAN, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode)};
 						messageToClient(client, replyGenerator(replyInfo));
 					}
 				}
 			}
+
 			/* ~~~message to client~~~ */
 			else {
 				std::map<std::string, Client*>::iterator	it;
 				it = serverInfo.clientsMap.find(privmsgInput.targets.top());
+				//Check if the client exists
 				if (it != serverInfo.clientsMap.end()){
+					//Client exists
 					if (client.getNickname() != it->second->getNickname()){
 						s_messageInfo messageInfo = {it->second->getNickname(),
-													&client, it->second, privmsgInput.message};
-						if (!messageToClient(messageInfo)){
-							//display send() error if (!messageToCient)
-						}
+						&client, it->second, privmsgInput.message};
+						messageToClient(messageInfo);
 					}
 				}
-				//X Client doesn't exist X
+				//Client doesn't exist
 				else{
 					s_ircReply	  replyInfo = {1, ERR_NOSUCHNICK, client.getNickname(), privmsgInput.targets.top(), errorMessages.at(replyInfo.errorCode) };
 					messageToClient(client, replyGenerator(replyInfo));
@@ -407,6 +371,7 @@ void	Commands::privmsgCommand( Client& client, struct ServerInfo& serverInfo ){
 	}
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: PING COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
 	(void)serverInfo;
 	if (!client.getStatus().registered){
@@ -418,8 +383,8 @@ void	Commands::pingCommand( Client& client, struct ServerInfo& serverInfo){
 	send(client.getPollFd(), message.c_str(), message.length(), 0);
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: QUIT COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
-	(void)serverInfo;
 	if (!client.getStatus().registered){
 		s_ircReply	  replyInfo = {1, ERR_NOTREGISTERED, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
@@ -430,13 +395,21 @@ void	Commands::quitCommand( Client& client, struct ServerInfo& serverInfo){
 	std::map<std::string, Channel*> channels = client.getChannels();
 	std::map<std::string, Channel*>::iterator it;
 	for (it = channels.begin() ; it != channels.end(); ++it){
-		messageToChannel(*it->second, client, "QUIT");
+		std::string message = ":"  + client.getNickname() +
+			  "!~" + client.getUsername()  +
+			  "@"  + client.getIpAddress() +
+			  " "  + "QUIT\n";
+		for (size_t i = 0; i < it->second->getChannelOperators().size(); ++i)
+			messageToClient(*it->second->getChannelOperators().at(i), message);
+		for (size_t i = 0; i < it->second->getChannelClients().size(); ++i)
+			messageToClient(*it->second->getChannelClients().at(i), message);
 		it->second->removeClient(client, serverInfo);
 		client.channelRemove(it->first);
 	}
 }
 
 			/* ~~~channel commands ~~~ */
+// :::::::::::::::::::::::::::::::::::::::::::: KICK COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::kickChannelCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
@@ -473,6 +446,7 @@ void	Commands::kickChannelCommand( Client& client, struct ServerInfo& serverInfo
 
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: INVITE COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& serverInfo ){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
@@ -527,6 +501,7 @@ void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& serverIn
 
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: TOPIC COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::topicChannelCommand( Client& client, struct ServerInfo& serverInfo ) {
 	(void)serverInfo;
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
@@ -590,6 +565,7 @@ int ft_atoi(const std::string& str){
 	return result;
 }
 
+// :::::::::::::::::::::::::::::::::::::::::::: MODE COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 // MODE USE CASES:
 // 1. INVITE: MODE #channel +i
 // 2. TOPIC: MODE #channel +t
@@ -767,10 +743,6 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 			}
 		}
 	}
-
-
-
-
 }
 
 //::::::::::::::::::Deconstructor:::::::::::::::::::::::::

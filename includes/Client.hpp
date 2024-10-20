@@ -6,6 +6,8 @@
 # include <vector>
 # include <map>
 # include <netinet/in.h>
+# include <sstream>
+# include <stdio.h>
 # include "Structs.hpp"
 
 class Channel;
@@ -15,7 +17,6 @@ class Client {
 		std::string				clientNickname;
 		std::string				clientUsername;
 		std::string				clientRealname;
-		bool					clientIsOperator; // true if the client is an operator and not a regular user
 		struct s_status			clientStatus;
 		struct s_ircCommand		clientInput;
 		int						clientSocket;
@@ -44,11 +45,9 @@ class Client {
 		void					setUsername( std::string& );
 		void					setRealname( std::string& );
 		void					setIpAddress( std::string& );
-		void					setType( bool );
 		void					setStatus( std::string, bool );
 
 		struct s_status			getStatus( void ) const;
-		bool					getType( void ) const;
 		std::string				getIpAddress( void ) const;
 		std::string				getRealname( void ) const;
 		std::string				getUsername( void ) const;

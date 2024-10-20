@@ -38,7 +38,7 @@ enum IrcErrors{
 
 	// KICK --> Already included
 
-	RPL_KICK				= 404,
+	// RPL_KICK				= 404,
 
 	// INVITE
 

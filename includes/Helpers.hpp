@@ -3,6 +3,8 @@
 
 # include <sstream>
 # include <iomanip>
+# include <errno.h>
+# include <cstring>
 # include "Client.hpp"
 # include "Channel.hpp"
 #include "Structs.hpp"
@@ -14,9 +16,9 @@ bool		isValidChannelName( std::string& );
 //::::::::::::::::::Commands:::::::::::::::::::::::::
 bool		privmsgAnalyser(std::vector<std::string>, s_prvMsgCommand& , Client& );
 
-bool		messageToClient( Client&, std::string );
-bool		messageToClient( s_messageInfo );
-bool		messageToChannel( Channel& , Client& , std::string );
+void		messageToClient( Client&, std::string );
+void		messageToClient( s_messageInfo );
+void		messageToChannel( Channel& , Client& , std::string );
 
 bool		trailingCheck( std::vector<std::string> arguments );
 

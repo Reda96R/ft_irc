@@ -203,7 +203,7 @@ void Channel::removeClient(Client &m, struct ServerInfo& serverInfo) {
     Client *me = &m;
     for (size_t i = 0; i < this->channelClients.size(); ++i) {
         if (this->channelClients[i] == me) {
-            messageToChannel(*this, m, "QUIT");
+            // messageToChannel(*this, m, "QUIT");
             this->channelClients.erase(this->channelClients.begin() + i);
             this->userCount--;
             break;
@@ -211,7 +211,7 @@ void Channel::removeClient(Client &m, struct ServerInfo& serverInfo) {
     }
     for (size_t i = 0; i < this->channelOperators.size(); ++i) {
         if (this->channelOperators[i] == me) {
-            messageToChannel(*this, m, "QUIT");
+            // messageToChannel(*this, m, "QUIT");
             this->channelOperators.erase(this->channelOperators.begin() + i);
             this->userCount--;
             break;

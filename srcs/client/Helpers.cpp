@@ -64,19 +64,19 @@ std::string	  replyGenerator( s_ircReply replyInfo ){
 }
 
 //Used to send replies from server to client
-bool	messageToClient( Client& target, std::string message){
+void	messageToClient( Client& target, std::string message){
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
 
-	if (send(target.getPollFd(), message.c_str(), message.length(), 0) == -1)
-		return (false);
-	return (true);
+	if (send(target.getPollFd(), message.c_str(), message.length(), 0) == -1){
+		std::cerr << RED << "Error sending data: " << strerror(errno) << RESET << std::endl;
+	}
 }
 
 //Used to send messages from client to client
-bool	messageToClient( s_messageInfo messageInfo ){
+void	messageToClient( s_messageInfo messageInfo ){
 	if (!messageInfo.receiver->getStatus().connected)
-		return (true);
+		return ;
 	if (messageInfo.message.at(messageInfo.message.size() - 1) != '\n')
 		messageInfo.message += '\n';
 
@@ -87,23 +87,21 @@ bool	messageToClient( s_messageInfo messageInfo ){
 						  " "  + "PRIVMSG" + " " + messageInfo.targetName + " " + messageInfo.message;
 
 	if (send(messageInfo.receiver->getPollFd(), messageInfo.message.c_str(), messageInfo.message.length(), 0) == -1)
-		return (false);
-	return (true);
+		std::cerr << RED << "Error sending data: " << strerror(errno) << RESET << std::endl;
 }
 
 //Used to send messages from client to channel
-bool	messageToChannel( Channel& target, Client& sender, std::string message){
+void	messageToChannel( Channel& target, Client& sender, std::string message){
 	//Checking if the user is part of the channel
 	std::map<std::string, Channel*> channels = sender.getChannels();
 	if (channels.find(target.getChannelName()) == channels.end()){
 		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, sender.getNickname(), target.getChannelName(), errorMessages.at(replyInfo.errorCode) };
 		messageToClient(sender, replyGenerator(replyInfo));
-		return (false);
+		return ;
 	}
 
 	if (message.at(message.size() - 1) != '\n')
 		message += '\n';
-
 
 	//Broadcasting the message
 	//Operators
@@ -111,10 +109,7 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 		if (target.getChannelOperators()[i]->getNickname() != sender.getNickname()){
 			s_messageInfo messageInfo = {target.getChannelName(), &sender,
 										target.getChannelOperators()[i], message};
-			if (!messageToClient(messageInfo)){
-				std::cout << RED << "Send failure" << RESET << std::endl;
-				return (false);
-			}
+			messageToClient(messageInfo);
 		}
 	}
 	//Clients
@@ -122,10 +117,7 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 		if (target.getChannelClients()[i]->getNickname() != sender.getNickname()){
 			s_messageInfo messageInfo = {target.getChannelName(), &sender,
 										target.getChannelClients()[i], message};
-			if (!messageToClient(messageInfo)){
-				std::cout << RED << "Send failure" << RESET << std::endl;
-				return (false);
-			}
+			messageToClient(messageInfo);
 		}
 	}
 
@@ -133,6 +125,7 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 		ircBot(target);
 	}
 
+	//log the message for statBot
 	else{
 		std::map<std::string, int>::iterator it =
 		target.statBot.messagesCount.find(sender.getNickname());
@@ -142,8 +135,6 @@ bool	messageToChannel( Channel& target, Client& sender, std::string message){
 		else
 			target.statBot.messagesCount[sender.getNickname()] = 1;
 	}
-
-	return (true);
 }
 
 bool	trailingCheck( std::vector<std::string> arguments ){

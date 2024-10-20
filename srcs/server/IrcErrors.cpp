@@ -33,7 +33,7 @@ void initializeErrorMessages() {
 
     // KICK
 
-    errorMessages[RPL_KICK]				= "has been kicked";
+    // errorMessages[RPL_KICK]				= "has been kicked";
 
     // INVITE
     errorMessages[RPL_INVITING]			= "is inviting you to";
