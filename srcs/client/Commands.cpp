@@ -234,12 +234,12 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 				messageToClient(*(it->second)->getChannelClients().at(i), message);
 
 			if (it->second->getChannelTopic().empty()){
-				s_ircReply	  replyInfo = {3, RPL_NOTOPIC, client.getNickname(), it->second->getChannelName() , ":" + errorMessages.at(replyInfo.errorCode) };
-				messageToClient(client, replyGenerator(replyInfo));
+				std::string message = ":ircserv 331 " + client.getNickname() + " " + channelName + "\n";
+				messageToClient(client, message);
 			}
 			else{
-				s_ircReply	  replyInfo = {3, RPL_TOPIC, client.getNickname(), it->second->getChannelName() , ":" + it->second->getChannelTopic() };
-				messageToClient(client, replyGenerator(replyInfo));
+				std::string message = ":ircserv 332 " + client.getNickname() + " " + channelName + " " + it->second->getChannelTopic() + "\n";
+				messageToClient(client, message);
 			}
 
 			message = ":" + client.getNickname()  +

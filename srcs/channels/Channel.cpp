@@ -185,18 +185,19 @@ ssize_t Channel::getUserCount() const {
 
 void Channel::setChannelTopic(Client &me, std::string& channelTopic) {
 
-    if (!this->topicProtected) {
+    if (!this->topicProtected || std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelTopic = channelTopic;
-        // s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Topic changed to: " + channelTopic };
-        // messageToClient(me, replyGenerator(replyInfo));
-        return ;
+		std::string message;
+		message = ":"  + me.getNickname()  +
+				  "!~" + me.getUsername()  +
+				  "@"  + me.getIpAddress() +
+				  " TOPIC " + channelName + " " + channelTopic + "\n";
+		for (size_t i = 0; i < this->getChannelOperators().size(); ++i)
+			messageToClient(*this->getChannelOperators().at(i), message);
+		for (size_t i = 0; i < this->getChannelClients().size(); ++i)
+			messageToClient(*this->getChannelClients().at(i), message);
     }
-    
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
-        this->channelTopic = channelTopic;
-        // s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Topic changed to: " + channelTopic };
-        // messageToClient(me, replyGenerator(replyInfo));
-    } else {
+    else {
         s_ircReply	  replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
         messageToClient(me, replyGenerator(replyInfo));
         return ;
