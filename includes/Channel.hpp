@@ -50,6 +50,7 @@ class Channel {
         // GETTERS
         std::string			    getChannelName() const;
         std::string			    getChannelTopic() const;
+        std::string			    getChannelMode() const;
         std::vector<Client*>    getChannelClients() const;
         std::vector<Client*>    getChannelOperators() const;
 		std::string			    getChannelClientsList() const;

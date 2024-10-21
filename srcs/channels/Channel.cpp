@@ -1,4 +1,3 @@
-# include "../../includes/Channel.hpp"
 # include "../../includes/Client.hpp"
 # include "../../includes/Server.hpp"
 # include "../../includes/Helpers.hpp"
@@ -6,6 +5,7 @@
 # include "../../includes/IrcErrors.hpp"
 # include <ctime>
 # include <sstream>
+#include <string>
 
 // USELESS CANONICAL FORM
 Channel::Channel(void) {
@@ -46,7 +46,7 @@ Channel::Channel(std::string& ChannelName){
     
     this->userLimit = SIZE_MAX;
     this->userCount = 1;
-    this->channelTopic = "No Topic Set";
+    // this->channelTopic = ";
 
     this->channelPasswordProtected = false;
     this->channelInviteOnly = false;
@@ -66,9 +66,22 @@ std::string Channel::getChannelName() const {
 }
 
 std::string Channel::getChannelTopic() const {
-    if (this->channelTopic.empty())
-        return "No topic is set";
-    return this->channelTopic;
+    // if (this->channelTopic.empty())
+    //     return "No topic is set";
+    return (this->channelTopic);
+}
+
+std::string Channel::getChannelMode() const{
+	std::string	  mode;
+	if (this->channelPasswordProtected)
+		mode += 'k';
+	if (this->channelInviteOnly)
+		mode += 'i';
+	if (this->userLimitOnOff)
+		mode += 'l';
+	if (this->topicProtected)
+		mode += 't';
+	return (mode);
 }
 
 std::vector<Client*> Channel::getChannelClients() const {
@@ -161,28 +174,28 @@ ssize_t Channel::getUserCount() const {
 
 // SETTERS
 
-void Channel::setChannelName(Client &me, std::string& channelName) {
-    if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end())
-        this->channelName = channelName;
-    else {
-        messageToClient(me, "You do not have the right to change the topic of this channel\n");
-        return ;
-    }
-}
+// void Channel::setChannelName(Client &me, std::string& channelName) {
+//     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end())
+//         this->channelName = channelName;
+//     else {
+//         messageToClient(me, "You do not have the right to change the topic of this channel\n");
+//         return ;
+//     }
+// }
 
 void Channel::setChannelTopic(Client &me, std::string& channelTopic) {
 
     if (!this->topicProtected) {
         this->channelTopic = channelTopic;
-        s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Topic changed to: " + channelTopic };
-        messageToClient(me, replyGenerator(replyInfo));
+        // s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Topic changed to: " + channelTopic };
+        // messageToClient(me, replyGenerator(replyInfo));
         return ;
     }
     
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelTopic = channelTopic;
-        s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Topic changed to: " + channelTopic };
-        messageToClient(me, replyGenerator(replyInfo));
+        // s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Topic changed to: " + channelTopic };
+        // messageToClient(me, replyGenerator(replyInfo));
     } else {
         s_ircReply	  replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
         messageToClient(me, replyGenerator(replyInfo));
@@ -240,8 +253,6 @@ void Channel::removeOperator(Client &me) {
 
 void Channel::AddInvitedUser(Client &me) {
     this->invitedUsers.push_back(&me);
-    s_ircReply	  replyInfo = {1, RPL_INVITING, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
-    messageToClient(me, replyGenerator(replyInfo));
 }
 
 void Channel::removeInvitedUser(Client &me) {
@@ -290,8 +301,12 @@ void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string&
 
     // add the user to the invited list
     this->invitedUsers.push_back(client_requested);
-    s_ircReply	  replyInfo = {1, RPL_INVITING, me.getNickname(), user, errorMessages.at(replyInfo.errorCode) };
-    messageToClient(me, replyGenerator(replyInfo));
+
+	std::string message = ":"  + me.getNickname() +
+			"!~" + me.getUsername()  +
+			"@"  + me.getIpAddress() +
+			" "  + "INVITE " + user + " " + this->getChannelName() + "\n";
+	messageToClient(*client_requested, message);
 }
 
 bool Channel::isClientInChannel(std::string &nick) {
@@ -368,21 +383,14 @@ void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& u
         }
     }   
 
-	(void)serverInfo;
-	(void)reason;
     // remove from client channels' list
     kick->channelRemove(this->channelName);
     this->userCount--;
     std::string message;
-    // if (reason.empty())
-    //     message = "has been kicked";
-    // else
-    //     message = "has been kicked : " + reason;
-    // s_ircReply      replyInfo = {1, RPL_KICK, me.getNickname(), this->channelName, "User " + kick->getNickname() + " " + message };
 	message = ":"  + me.getNickname()  +
 			  "!~" + me.getUsername()  +
 			  "@"  + me.getIpAddress() +
-			  " "  + "KICK" + " " + this->getChannelName() + " " + kick->getNickname() + " : " + reason + "\n";
+			  " "  + "KICK" + " " + this->getChannelName() + " " + kick->getNickname() + " " + reason + "\n";
 
 	for (size_t i = 0; i < this->getChannelOperators().size(); ++i)
 		messageToClient(*this->getChannelOperators().at(i), message);
@@ -390,10 +398,6 @@ void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& u
 		messageToClient(*this->getChannelClients().at(i), message);
     messageToClient(*kick, message);
 
-    // messageToClient(me, replyGenerator(replyInfo));
-    // messageToChannel(*this, me, message);
-    // messageToClient(*kick, "You have been kicked from the channel " + this->channelName + " by " + me.getNickname() + " due to " + reason);
-    //
 }
 
 void Channel::makeOperator(Client &me, std::string& user) {
@@ -411,11 +415,12 @@ void Channel::makeOperator(Client &me, std::string& user) {
     // add the user to the operators list
     if (op != NULL) {
         this->channelOperators.push_back(op);
+		this->channelClients.erase(std::remove(this->channelClients.begin(), this->channelClients.end(), op), this->channelClients.end());
     }
 }
 
 void Channel::removeOperator(Client &me, std::string& user) {
-    // check if we have the right to remove someone from the operators
+    // check if we have the right to make someone a normal client
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) == this->channelOperators.end())
         return ;
     // check if the user is in the operators list
@@ -427,16 +432,16 @@ void Channel::removeOperator(Client &me, std::string& user) {
         }
     }
     // remove the user from the operators list
-    if (op != NULL)
+    if (op != NULL){
+		this->channelClients.push_back(op);
         this->channelOperators.erase(std::remove(this->channelOperators.begin(), this->channelOperators.end(), op), this->channelOperators.end());
+	}
 }
 
 void Channel::setChannelPassword(Client &me, std::string& password) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelPasswordProtected = true;
         this->channelPassword = password;
-        s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Password set" };
-        messageToClient(me, replyGenerator(replyInfo));
     }
     else {
         s_ircReply	  replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
@@ -449,8 +454,6 @@ void Channel::removeChannelPassword(Client &me) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelPasswordProtected = false;
         this->channelPassword = "";
-        s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Password removed" };
-        messageToClient(me, replyGenerator(replyInfo));
     }
     else {
         s_ircReply	  replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
@@ -462,8 +465,6 @@ void Channel::removeChannelPassword(Client &me) {
 void Channel::setChannelInviteOnly(Client &me) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelInviteOnly = true;
-        s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Invite only mode set" };
-        messageToClient(me, replyGenerator(replyInfo));
     }
     else {
         s_ircReply    replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
@@ -475,8 +476,6 @@ void Channel::setChannelInviteOnly(Client &me) {
 void Channel::removeChannelInviteOnly(Client &me) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->channelInviteOnly = false;
-        s_ircReply	  replyInfo = {1, RPL_TOPIC, me.getNickname(), this->channelName, "Invite only mode removed" };
-        messageToClient(me, replyGenerator(replyInfo));
     }
     else {
         s_ircReply    replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
@@ -484,13 +483,11 @@ void Channel::removeChannelInviteOnly(Client &me) {
         return ;
     }
 }
-#include<string>
+
 void Channel::setChannelUserLimit(Client &me, ssize_t limit) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->userLimitOnOff = true;
         this->userLimit = limit;
-        s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, me.getNickname(), this->channelName, "User limit set to " + intToString(limit) };
-        messageToClient(me, replyGenerator(replyInfo));
     }
     else {
         s_ircReply    replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };
@@ -503,8 +500,6 @@ void Channel::removeChannelUserLimit(Client &me) {
     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end()) {
         this->userLimitOnOff = false;
         this->userLimit = SIZE_MAX;
-        s_ircReply      replyInfo = {1, RPL_CHANNELMODEIS, me.getNickname(), this->channelName, "User limit removed" };
-        messageToClient(me, replyGenerator(replyInfo));
     }
     else {
         s_ircReply    replyInfo = {1, ERR_CHANOPRIVSNEEDED, me.getNickname(), this->channelName, errorMessages.at(replyInfo.errorCode) };

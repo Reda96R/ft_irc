@@ -176,14 +176,6 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 		return ;
 	}
 	
-	// Check if the trailing is empty
-	// TODO: WTF is this? Don't worry about it bro, ma lak dakhel. 
-	// if (trailingCheck(client.getInput().arguments)){
-	// 	std::cerr << RED << "Trailing is empty" << RESET << std::endl;
-		// messageToClient(client, client, replyGenerator(ERR_NOTREGISTERED, client.getNickname()));
-	// 	return ;
-	// }
-
 	// Check if the channel name is valid
 	std::string channelName = client.getInput().arguments[0];
 	if (!isValidChannelName(channelName)){
@@ -197,21 +189,13 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 	if (it != serverInfo.channels.end()){
 		// Check if the channel is password protected
 		if (it->second->isChannelPasswordProtected()){
-			// Check if there are enough arguments
-			if (client.getInput().arguments.size() < 2){
-				s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "JOIN", errorMessages.at(replyInfo.errorCode) };
-				messageToClient(client, replyGenerator(replyInfo));
-				return ;
-			}
-		
 			// Check if the password is correct
-			if (!it->second->comparePassword(client.getInput().arguments[1])){
-				s_ircReply	  replyInfo = {1, ERR_BADCHANNELKEY, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+			if (client.getInput().arguments.size() != 2 && !it->second->comparePassword(client.getInput().arguments[1])){
+				s_ircReply	  replyInfo = {1, ERR_BADCHANNELKEY, client.getNickname(), "", errorMessages.at(replyInfo.errorCode) };
 				messageToClient(client, replyGenerator(replyInfo));
 				return ;
 			}
 		}
-
 
 		// Check if the channel is full
 		if (it->second->isChannelUserLimitOnOff()) {
@@ -488,13 +472,10 @@ void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& serverIn
 			}
 			// check if the user is invited
 			if (serverInfo.channels[channelName]->isClientInvited(*(*it))){
-				s_ircReply	  replyInfo = {1, RPL_INVITING, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
-				messageToClient(client, replyGenerator(replyInfo));
 				return ;
 			}
 			// invite the user
 			serverInfo.channels[channelName]->inviteUser(client, serverInfo, userName);
-
 			return ;
 		}
 	}
@@ -503,7 +484,6 @@ void	Commands::inviteChannelCommand( Client& client, struct ServerInfo& serverIn
 
 // :::::::::::::::::::::::::::::::::::::::::::: TOPIC COMMAND ::::::::::::::::::::::::::::::::::::::::::::
 void	Commands::topicChannelCommand( Client& client, struct ServerInfo& serverInfo ) {
-	(void)serverInfo;
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
 		return ;
 	if (!client.getStatus().registered){
@@ -522,14 +502,14 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& serverInf
 
 	// Check if the channel exists
 	if (serverInfo.channels.find(channelName) == serverInfo.channels.end()){
-		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+		s_ircReply	  replyInfo = {1, ERR_NOSUCHCHANNEL, client.getNickname(), "TOPIC", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 
 	// Check if the channel exists [map] and that the second argument is not empty
-	if (client.amIInChannel(channelName) == false){
-		s_ircReply	  replyInfo = {1, ERR_NOTONCHANNEL, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
+	if (!client.amIInChannel(channelName)){
+		s_ircReply	  replyInfo = {1, ERR_NOTONCHANNEL, client.getNickname(), "TOPIC", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
@@ -538,12 +518,12 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& serverInf
 
 	if (client.getInput().arguments.size() == 1) {
 		if (serverInfo.channels[channelName]->getChannelTopic().empty()){
-			s_ircReply	  replyInfo = {3, RPL_NOTOPIC, client.getNickname(), channelName , ":" + errorMessages.at(replyInfo.errorCode) };
-			messageToClient(client, replyGenerator(replyInfo));
+			std::string message = ":ircserv 331 " + client.getNickname() + " " + channelName + "\n";
+			messageToClient(client, message);
 		}
 		else{
-			s_ircReply	  replyInfo = {3, RPL_TOPIC, client.getNickname(), channelName , ":" + serverInfo.channels[channelName]->getChannelTopic() };
-			messageToClient(client, replyGenerator(replyInfo));
+			std::string message = ":ircserv 332 " + client.getNickname() + " " + channelName + " " + serverInfo.channels[channelName]->getChannelTopic() + "\n";
+			messageToClient(client, message);
 		}
 		return ;
 	}
@@ -582,14 +562,14 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 		return ;
 	}
 
-	if (client.getInput().arguments.size() < 2){
+	if (client.getInput().arguments.size() < 1){
 		s_ircReply	  replyInfo = {1, ERR_NEEDMOREPARAMS, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
 
+
 	std::string channelName = client.getInput().arguments.at(0);
-	std::string mode = client.getInput().arguments.at(1);
 
 	// check if server has the channel
 	if (serverInfo.channels.find(channelName) == serverInfo.channels.end()){
@@ -607,6 +587,15 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 
 	Channel *channel = serverInfo.channels[channelName];
 
+	if (client.getInput().arguments.size() == 1){
+		std::string message = ":ircserv 324 " + client.getNickname() + " "
+							+ channel->getChannelName() + " "
+							+ (!channel->getChannelMode().empty() ? "+" + channel->getChannelMode() : "");
+		messageToClient(client, message);
+		return ;
+	}
+
+	std::string mode = client.getInput().arguments.at(1);
 	// Check if the user is an operator
 	if (!channel->isClientOperator(client)){
 		s_ircReply	  replyInfo = {1, ERR_CHANOPRIVSNEEDED, client.getNickname(), channelName, errorMessages.at(replyInfo.errorCode) };
@@ -616,7 +605,7 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 
 	// Check if the mode is valid
 	if (mode.length() < 2 || (mode[0] != '+' && mode[0] != '-') || (mode[1] != 'i' && mode[1] != 't' && mode[1] != 'k' && mode[1] != 'l' && mode[1] != 'o')){
-		s_ircReply	  replyInfo = {1, ERR_UNKNOWNMODE, client.getNickname(), mode, errorMessages.at(replyInfo.errorCode) };
+		s_ircReply	  replyInfo = {1, ERR_UNKNOWNMODE, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode)};
 		messageToClient(client, replyGenerator(replyInfo));
 		return ;
 	}
@@ -625,8 +614,24 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 	if (mode[1] == 'i'){
 		if (mode[0] == '+') {
 			channel->setChannelInviteOnly(client);
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " +i\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*channel->getChannelClients().at(i), message);
 		} else {
 			channel->removeChannelInviteOnly(client);
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " -i\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*channel->getChannelClients().at(i), message);
 		}
 	}
 
@@ -634,18 +639,26 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 	if (mode[1] == 't'){
 		if (mode[0] == '+'){
 			channel->setTopicProtected();
-			std::string	  message = ":" + client.getNickname() + " MODE " + channelName + " +t\n";
-			s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "Channel is now topic protected" };
-			messageToClient(client, replyGenerator(replyInfo));
+
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " +t\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
 			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
-				messageToClient(*(channel->getChannelClients().at(i)), message);
+				messageToClient(*channel->getChannelClients().at(i), message);
 		} else { 
 			channel->removeTopicProtected();
-			std::string	  message = ":" + client.getNickname() + " MODE " + channelName + " -t\n";
-			s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "Channel is no longer topic protected" };
-			messageToClient(client, replyGenerator(replyInfo));
+
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " -t\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
 			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
-				messageToClient(*(channel->getChannelClients().at(i)), message);
+				messageToClient(*channel->getChannelClients().at(i), message);
 		}		
 	}
 
@@ -658,9 +671,26 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 				return ;
 			}
 			channel->setChannelPassword(client, client.getInput().arguments.at(2));
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " +k\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*channel->getChannelClients().at(i), message);
 		}
-		else
+		else{
 			channel->removeChannelPassword(client);
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " -k\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*channel->getChannelClients().at(i), message);
+		}
 	}
 
 	// Check if the mode is user limit
@@ -684,9 +714,26 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 			}
 
 			channel->setChannelUserLimit(client, (ssize_t)ft_atoi(client.getInput().arguments.at(2)));
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " +l " + intToString(ft_atoi(client.getInput().arguments.at(2)));
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*channel->getChannelClients().at(i), message);
 		}
-		else
+		else{
 			channel->removeChannelUserLimit(client);
+			std::string message = ":"  + client.getNickname() +
+					"!~" + client.getUsername()  +
+					"@"  + client.getIpAddress() +
+					" "  + "MODE " + channel->getChannelName() + " -l\n";
+			for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+				messageToClient(*channel->getChannelOperators().at(i), message);
+			for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+				messageToClient(*channel->getChannelClients().at(i), message);
+		}
 	}
 
 	// Check if the mode is operator
@@ -698,22 +745,32 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 				return ;
 			}
 			std::string userName = client.getInput().arguments.at(2);
-			// check if the user exists in the channel
-			if (channel->isClientInChannel(userName)){
-				// check if the user is already an operator
-				if (channel->isClientOperator(userName)){			
-					s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is now an operator" };
-					messageToClient(client, replyGenerator(replyInfo));
-					return ;
-				}
-				// make the user an operator
-				channel->makeOperator(client, userName);
-				s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is now an operator" };
-    			messageToClient(client, replyGenerator(replyInfo));
+			// check if the user exists in the server
+			if (serverInfo.clientsMap.find(userName) == serverInfo.clientsMap.end()){
+				s_ircReply	  replyInfo = {1, ERR_NOSUCHNICK, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+				messageToClient(client, replyGenerator(replyInfo));
 			}
 			else {
-				s_ircReply	  replyInfo = {1, ERR_USERNOTINCHANNEL, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
-				messageToClient(client, replyGenerator(replyInfo));
+				// check if the user exists in the channel
+				if (channel->isClientInChannel(userName)){
+					// check if the user is already an operator
+					if (channel->isClientOperator(userName))	
+						return ;
+					// make the user an operator
+					channel->makeOperator(client, userName);
+					std::string message = ":"  + client.getNickname() +
+							"!~" + client.getUsername()  +
+							"@"  + client.getIpAddress() +
+							" "  + "MODE " + channel->getChannelName() + " +o " +
+							userName + "\n";
+					for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+						messageToClient(*channel->getChannelOperators().at(i), message);
+					for (size_t i = 0; i < channel->getChannelClients().size(); ++i)
+						messageToClient(*channel->getChannelClients().at(i), message);
+				} else {
+					s_ircReply	  replyInfo = {1, ERR_USERNOTINCHANNEL, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };
+					messageToClient(client, replyGenerator(replyInfo));
+				}
 			}
 
 		}
@@ -728,14 +785,20 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 			if (channel->isClientInChannel(userName)){
 				// check if the user is an operator
 				if (!channel->isClientOperator(userName)){
-					s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is no longer an operator" };
-					messageToClient(client, replyGenerator(replyInfo));
 					return ;
 				}
 				// remove the user from the operator list
 				channel->removeOperator(client, userName);
-				s_ircReply	  replyInfo = {1, RPL_CHANNELMODEIS, client.getNickname(), channelName, "User is no longer an operator" };
-				messageToClient(client, replyGenerator(replyInfo));
+				std::string message = ":"  + client.getNickname() +
+						"!~" + client.getUsername()  +
+						"@"  + client.getIpAddress() +
+						" "  + "MODE " + channel->getChannelName() + " -o " +
+						userName + "\n";
+				for (size_t i = 0; i < channel->getChannelOperators().size(); ++i)
+					messageToClient(*channel->getChannelOperators().at(i), message);
+				for (size_t i = 0; i < channel->getChannelClients().size(); ++i){
+					messageToClient(*channel->getChannelClients().at(i), message);
+				}
 			}
 			else {
 				s_ircReply	  replyInfo = {1, ERR_USERNOTINCHANNEL, client.getNickname(), userName, errorMessages.at(replyInfo.errorCode) };
