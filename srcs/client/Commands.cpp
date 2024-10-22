@@ -97,12 +97,15 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 		if (client.getStatus().registered){
 			std::string oldNick = client.getNickname();
 			client.setNickname(client.getInput().arguments.at(0));
-			std::string	  message = oldNick + " Changed his nickname to " + client.getNickname();
+			std::string message = ":"  + oldNick  +
+				  "!~" + client.getUsername()  +
+				  "@"  + client.getIpAddress() +
+				  " NICK " + client.getNickname() + "\n";
 			for (size_t i = 0; i < serverInfo.clients.size(); ++i){
-				if (serverInfo.clients[i]->getNickname() != client.getNickname()){
+				// if (serverInfo.clients[i]->getNickname() != client.getNickname()){
 					s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i), message};
-					messageToClient(messageInfo);
-				}
+					messageToClient(*serverInfo.clients[i], message);
+				// }
 			}
 			return ;
 		}

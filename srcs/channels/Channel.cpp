@@ -349,6 +349,11 @@ void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& u
         return ;
     }
 
+	if (me.getNickname() == user){	
+		std::string message = ":ircserv 483 " + user + " :You can't kick yourself\n";
+        messageToClient(me, message);
+        return ;
+	}
 
     Client *kick = NULL;
     for (std::vector<Client*>::iterator it = serverInfo.clients.begin(); it < serverInfo.clients.end(); it++) {
@@ -365,11 +370,12 @@ void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& u
     }
 
     // check if the user is in the channel
-    if (std::find(this->channelClients.begin(), this->channelClients.end(), kick) == this->channelClients.end()) {
+	if (kick->getChannels().find(this->getChannelName()) == kick->getChannels().end()){
         s_ircReply      replyInfo = {1, ERR_USERNOTINCHANNEL, me.getNickname(), kick->getNickname(), errorMessages.at(replyInfo.errorCode) };
         messageToClient(me, replyGenerator(replyInfo));
         return ;
     }
+
 
     for (size_t i = 0; i < this->channelClients.size(); ++i) {
         if (this->channelClients[i] == kick) {
@@ -382,7 +388,7 @@ void Channel::kickUser(Client &me, struct ServerInfo& serverInfo, std::string& u
             this->channelOperators.erase(this->channelOperators.begin() + i);
             break;
         }
-    }   
+    } 
 
     // remove from client channels' list
     kick->channelRemove(this->channelName);
