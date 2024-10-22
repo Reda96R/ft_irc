@@ -31,10 +31,6 @@ void initializeErrorMessages() {
     errorMessages[ERR_CHANOPRIVSNEEDED] = "You're not channel operator";
     errorMessages[ERR_UMODEUNKNOWNFLAG] = "Unknown MODE flag";
 
-    // KICK
-
-    // errorMessages[RPL_KICK]				= "has been kicked";
-
     // INVITE
     errorMessages[RPL_INVITING]			= "is inviting you to";
     errorMessages[RPL_AWAY]				= "is away";

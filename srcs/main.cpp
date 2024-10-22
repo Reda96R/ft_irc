@@ -2,8 +2,6 @@
 #include "../includes/macros.hpp"
 #include "../includes/Server.hpp"
 
-
-
 int main(int argc, char **argv)
 {
     ServerInfo server_info;

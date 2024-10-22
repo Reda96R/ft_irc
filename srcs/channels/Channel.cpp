@@ -7,7 +7,6 @@
 # include <sstream>
 #include <string>
 
-// USELESS CANONICAL FORM
 Channel::Channel(void) {
 
 }
@@ -46,7 +45,6 @@ Channel::Channel(std::string& ChannelName){
     
     this->userLimit = SIZE_MAX;
     this->userCount = 1;
-    // this->channelTopic = ";
 
     this->channelPasswordProtected = false;
     this->channelInviteOnly = false;
@@ -66,8 +64,6 @@ std::string Channel::getChannelName() const {
 }
 
 std::string Channel::getChannelTopic() const {
-    // if (this->channelTopic.empty())
-    //     return "No topic is set";
     return (this->channelTopic);
 }
 
@@ -99,7 +95,6 @@ std::string	  Channel::getChannelClientsList() const {
 
 	std::vector<Client*>::iterator it = clients.begin();
 	if (it != clients.end()){
-		// if (this->getChannelOperators().find((*it)->getNickname))
 		clientsList += (*it)->getNickname();
 		++it;
 	}
@@ -156,32 +151,6 @@ ssize_t Channel::getUserLimit() const {
 ssize_t Channel::getUserCount() const {
     return this->userCount;
 }
-
-
-// bool Channel::isUserInChannel(const std::string& nickName) {
-//     for (std::vector<Client*>::iterator it = channelClients.begin(); it != channelClients.end(); ++it) {
-//         if ((*it)->getNickName() == nickName) {
-//             return true; // Found the client with the matching nickname
-//         }
-//     }
-//     for (std::vector<Client*>::iterator it = channelClients.begin(); it != channelClients.end(); ++it) {
-//         if ((*it)->getNickName() == nickName) {
-//             return true; // Found the client with the matching nickname
-//         }
-//     }
-//     return false; 
-// }
-
-// SETTERS
-
-// void Channel::setChannelName(Client &me, std::string& channelName) {
-//     if (std::find(this->channelOperators.begin(), this->channelOperators.end(), &me) != this->channelOperators.end())
-//         this->channelName = channelName;
-//     else {
-//         messageToClient(me, "You do not have the right to change the topic of this channel\n");
-//         return ;
-//     }
-// }
 
 void Channel::setChannelTopic(Client &me, std::string& channelTopic) {
 
@@ -271,7 +240,6 @@ void Channel::removeTopicProtected() {
 // METHODS
 
 void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string& user) {
-    // i need a the list of USERS in the server
 
     // check if the client has the right to invite users
     // if not return ;
@@ -280,7 +248,6 @@ void Channel::inviteUser(Client &me, struct ServerInfo& serverInfo, std::string&
 
     // check if the string provided is a valid nickname
     // if not return ;
-
     Client *client_requested = NULL;
     for (std::vector<Client*>::iterator it = serverInfo.clients.begin(); it < serverInfo.clients.end(); it++) {
         if ((*it)->getNickname() == user) {
@@ -580,13 +547,3 @@ bool Channel::isChannelUserLimitOnOff(void) {
 bool Channel::isChannelPasswordProtected(void) {
     return this->channelPasswordProtected;
 }
-
-//TODO: fix the pointer issue
-// void Channel::sendChannelMessage(Client &me, std::string& message) {
-//     std::vector<Client>::iterator it = this->channelOperators.begin();
-//     std::string fullMessage = me.getNickname() + " : " + message;
-//     while (it != this->channelClients.end()) {
-//         this->sendMessage((*it), fullMessage);
-//         it++;
-//     }
-// }

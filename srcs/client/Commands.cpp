@@ -102,10 +102,8 @@ void	Commands::nickCommand( Client& client, struct ServerInfo& serverInfo ){
 				  "@"  + client.getIpAddress() +
 				  " NICK " + client.getNickname() + "\n";
 			for (size_t i = 0; i < serverInfo.clients.size(); ++i){
-				// if (serverInfo.clients[i]->getNickname() != client.getNickname()){
 					s_messageInfo messageInfo = {serverInfo.clients.at(i)->getNickname(), &client, serverInfo.clients.at(i), message};
 					messageToClient(*serverInfo.clients[i], message);
-				// }
 			}
 			return ;
 		}
@@ -295,9 +293,7 @@ void	Commands::joinCommand( Client& client, struct ServerInfo& serverInfo){
 				  " :End of /NAMES list.\n";
 		messageToClient(client, message);
 
-		// std::cout << GREEN << "Channel created" << RESET << std::endl;
 		client.channelAdd(*channel);
-		// std::cout << GREEN << "Client added to the channel" << RESET << std::endl;
 	}
 }
 
@@ -536,8 +532,6 @@ void	Commands::topicChannelCommand( Client& client, struct ServerInfo& serverInf
 	channel->setChannelTopic(client, topic);
 }
 
-// 3toi lol
-
 int ft_atoi(const std::string& str){
 	int result = 0;
 	for (size_t i = 0; i < str.size(); ++i){
@@ -549,12 +543,6 @@ int ft_atoi(const std::string& str){
 }
 
 // :::::::::::::::::::::::::::::::::::::::::::: MODE COMMAND ::::::::::::::::::::::::::::::::::::::::::::
-// MODE USE CASES:
-// 1. INVITE: MODE #channel +i
-// 2. TOPIC: MODE #channel +t
-// 3. PASSWORD: MODE #channel +k password
-// 4. USER LIMIT: MODE #channel +l limit
-// 5. OPERATOR: MODE #channel +o user
 
 void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo){
 	if (trailingCheck(client.getInput().arguments) || !client.getInput().prefix.empty())
@@ -709,6 +697,7 @@ void	Commands::modeChannelCommand( Client& client, struct ServerInfo& serverInfo
 				messageToClient(client, replyGenerator(replyInfo));
 				return ;
 			}
+
 			// check if the user limit is valid if its less than the number of users in the channel
 			if (channel->getUserCount() > (ssize_t)ft_atoi(client.getInput().arguments.at(2))){
 				s_ircReply	  replyInfo = {1, ERR_BADCHANMASK, client.getNickname(), "MODE", errorMessages.at(replyInfo.errorCode) };

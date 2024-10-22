@@ -20,7 +20,7 @@ std::vector<std::pair<std::string, int> > getStats( Channel& channel ){
 
    // Add the header as the first element
     std::vector<std::pair<std::string, int> > result;
-    result.push_back(std::make_pair("::::::: Channel Stats ::::::", -1)); // -1 signifies header
+    result.push_back(std::make_pair("::::::: Channel Stats ::::::", -1));
     result.push_back(std::make_pair("~~~~ Channel Age ~~~", -1));
     result.push_back(std::make_pair(channel.getChannelAge(), -1)); 
     result.push_back(std::make_pair("~~~~ Totale Messages ~~~", -1));

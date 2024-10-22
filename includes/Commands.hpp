@@ -11,7 +11,7 @@
 
 class Commands {
 	private:
-	std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> commandsMap; //containing the command and pointer to its function
+	std::map<std::string, void (Commands::*) ( Client&, struct ServerInfo& )> commandsMap;
 
 	public:
 		Commands( void );
